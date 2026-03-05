@@ -1,0 +1,14 @@
+{
+  "model_path": "/mnt/data1/ytchen/cache/Meta-Llama-3-8B-Instruct",
+  "draft_model_path": "/mnt/data1/ytchen/cache/FangLIU/LD2/llama3-8b/Eagle2-800k",
+  "gpu_id": 0,
+  "port": 30000,
+  "temperature": 0,
+  "context_length": 2048,
+  "datasets": [
+    "data/sum/question.jsonl",
+    "data/qa/question.jsonl"
+  ],
+  "timestamp": "2026-03-05 19:43:16"
+}
+------------------------------------------------------------

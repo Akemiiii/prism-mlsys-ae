@@ -1,0 +1,19 @@
+
+{"temperature": 0, "question_file": "data/mt_bench/question.jsonl", "throughput": 232.579, "accept_length": 3.467}
+{"temperature": 0, "question_file": "data/humaneval/question.jsonl", "throughput": 250.127, "accept_length": 3.704}
+{"temperature": 1.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 252.862, "accept_length": 3.939}
+{"temperature": 0.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 253.288, "accept_length": 3.94}
+{"temperature": 1.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 243.493, "accept_length": 3.8}
+{"temperature": 0.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 244.178, "accept_length": 3.799}
+{"temperature": 0.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 260.687, "accept_length": 4.07}
+{"temperature": 1.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 261.527, "accept_length": 4.076}
+{"temperature": 0.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 176.213, "accept_length": 3.744}
+{"temperature": 1.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 175.375, "accept_length": 3.744}
+{"temperature": 0.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 184.82, "accept_length": 3.956}
+{"temperature": 1.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 185.946, "accept_length": 3.981}
+{"temperature": 0.0, "question_file": "data/qa/question.jsonl", "throughput": 141.342, "accept_length": 3.039}
+{"temperature": 0.0, "question_file": "data/gsm8k/question.jsonl", "throughput": 155.233, "accept_length": 2.883}
+{"temperature": 0.0, "question_file": "data/qa/question.jsonl", "throughput": 152.578, "accept_length": 2.833}
+{"temperature": 0.0, "question_file": "data/mt_bench/question.jsonl", "throughput": 907.168, "accept_length": 4.641}
+{"temperature": 0.0, "question_file": "data/qa/question.jsonl", "throughput": 143.207, "accept_length": 4.429}
+{"temperature": 0.0, "question_file": "data/qa/question.jsonl", "throughput": 143.183, "accept_length": 4.426}
