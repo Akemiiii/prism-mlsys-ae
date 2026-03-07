@@ -24,9 +24,9 @@ DEFAULT_DATASETS = [
 
 CSV_FIELDS = [
     "algorithm",
-    "draft_model_path",
     "dataset",
     "question_file",
+    "temperature",
     "status",
     "throughput",
     "accept_length",
@@ -93,9 +93,9 @@ def run_one_dataset(
     proc = subprocess.run(cmd, cwd=str(work_dir), text=True, capture_output=True)
     row = {
         "algorithm": "Standalone",
-        "draft_model_path": "",
         "dataset": Path(dataset).parts[-2] if len(Path(dataset).parts) >= 2 else dataset,
         "question_file": dataset,
+        "temperature": temperature,
         "status": "ok" if proc.returncode == 0 else "failed",
         "throughput": "",
         "accept_length": "",
@@ -171,6 +171,15 @@ def insert_rows_after_header(csv_path: Path, new_rows: list[dict]) -> None:
         fieldnames = reader.fieldnames
         existing_rows = list(reader)
 
+    if "draft_model_path" in fieldnames:
+        fieldnames = [name for name in fieldnames if name != "draft_model_path"]
+    if "temperature" not in fieldnames:
+        if "question_file" in fieldnames:
+            idx = fieldnames.index("question_file") + 1
+            fieldnames = fieldnames[:idx] + ["temperature"] + fieldnames[idx:]
+        else:
+            fieldnames = [*fieldnames, "temperature"]
+
     # Ensure all required fields for this evaluation are present.
     missing = [field for field in CSV_FIELDS if field not in fieldnames]
     if missing:
@@ -196,17 +205,48 @@ def insert_rows_after_header(csv_path: Path, new_rows: list[dict]) -> None:
             writer.writerow(normalized)
 
 
+def find_repo_root(start: Path) -> Path:
+    for candidate in [start, *start.parents]:
+        if (candidate / "evaluation" / "client" / "bench_mt_all.py").exists():
+            return candidate
+    raise FileNotFoundError(
+        f"Cannot locate repo root from {start}; expected evaluation/client/bench_mt_all.py"
+    )
+
+
+def resolve_under_script_dir(script_dir: Path, path_str: str) -> Path:
+    p = Path(path_str)
+    if p.is_absolute():
+        return p
+    return script_dir / p
+
+
 def main() -> int:
-    default_model_prefix = str((Path(__file__).resolve().parent / "../models").resolve())
+    script_path = Path(__file__).resolve()
+    script_dir = script_path.parent
+    repo_root = find_repo_root(script_dir)
+    default_model_prefix = str((repo_root / "models").resolve())
     parser = argparse.ArgumentParser(
         description="Start sglang, run multi-dataset evaluation, and insert rows into an existing CSV."
     )
     parser.add_argument("--port", type=int, default=30000)
     parser.add_argument("--startup-timeout", type=int, default=180)
-    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="If set, override --temperatures with a single value.",
+    )
+    parser.add_argument(
+        "--temperatures",
+        nargs="+",
+        type=float,
+        default=[0.0, 1.0],
+        help="Bench temperatures to evaluate. Ignored when --temperature is set.",
+    )
     parser.add_argument("--num-questions", type=int, default=80)
-    parser.add_argument("--output-csv", default="evaluation/e2e_llama2.csv")
-    parser.add_argument("--server-log", default="evaluation/logs/e2e_llama2_standalone_server.log")
+    parser.add_argument("--output-csv", default="e2e_llama2.csv")
+    parser.add_argument("--server-log", default="logs/e2e_llama2_standalone_server.log")
     parser.add_argument("--model-path", default=str(Path(default_model_prefix) / "Llama-2-7b-chat-hf"))
     parser.add_argument("--speculative-algorithm", default="STANDALONE")
     parser.add_argument(
@@ -215,16 +255,19 @@ def main() -> int:
     )
     parser.add_argument("--datasets", nargs="*", default=DEFAULT_DATASETS)
     args = parser.parse_args()
+    temperatures = [args.temperature] if args.temperature is not None else args.temperatures
+    if not temperatures:
+        print("[Error] At least one temperature is required", file=sys.stderr)
+        return 1
 
-    repo_root = Path(__file__).resolve().parents[1]
     client_dir = repo_root / "evaluation" / "client"
     bench_script = client_dir / "bench_mt_all.py"
     if not bench_script.exists():
         print(f"[Error] bench script not found: {bench_script}", file=sys.stderr)
         return 1
 
-    log_path = repo_root / args.server_log
-    csv_path = repo_root / args.output_csv
+    log_path = resolve_under_script_dir(script_dir, args.server_log)
+    csv_path = resolve_under_script_dir(script_dir, args.output_csv)
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
     rows = []
@@ -248,35 +291,37 @@ def main() -> int:
             print(f"[2/3] Waiting for server on {args.port}...")
             if not wait_for_port("127.0.0.1", args.port, args.startup_timeout):
                 print("[Error] Server startup timeout. Check server log.", file=sys.stderr)
-                for dataset in args.datasets:
-                    rows.append(
-                        {
-                            "algorithm": args.speculative_algorithm,
-                            "draft_model_path": args.draft_model_path,
-                            "dataset": Path(dataset).parts[-2] if len(Path(dataset).parts) >= 2 else dataset,
-                            "question_file": dataset,
-                            "status": "failed",
-                            "throughput": "",
-                            "accept_length": "",
-                            "error": "server startup timeout",
-                        }
-                    )
+                for temperature in temperatures:
+                    for dataset in args.datasets:
+                        rows.append(
+                            {
+                                "algorithm": args.speculative_algorithm,
+                                "dataset": Path(dataset).parts[-2] if len(Path(dataset).parts) >= 2 else dataset,
+                                "question_file": dataset,
+                                "temperature": temperature,
+                                "status": "failed",
+                                "throughput": "",
+                                "accept_length": "",
+                                "error": "server startup timeout",
+                            }
+                        )
             else:
                 print("[3/3] Running datasets...")
-                for dataset in args.datasets:
-                    print(f"- {dataset}")
-                    row = run_one_dataset(
-                        python_exe=sys.executable,
-                        bench_script=bench_script,
-                        work_dir=client_dir,
-                        dataset=dataset,
-                        port=args.port,
-                        temperature=args.temperature,
-                        num_questions=args.num_questions,
-                    )
-                    row["algorithm"] = args.speculative_algorithm
-                    row["draft_model_path"] = args.draft_model_path
-                    rows.append(row)
+                for temperature in temperatures:
+                    print(f"- temperature={temperature}")
+                    for dataset in args.datasets:
+                        print(f"  - {dataset}")
+                        row = run_one_dataset(
+                            python_exe=sys.executable,
+                            bench_script=bench_script,
+                            work_dir=client_dir,
+                            dataset=dataset,
+                            port=args.port,
+                            temperature=temperature,
+                            num_questions=args.num_questions,
+                        )
+                        row["algorithm"] = args.speculative_algorithm
+                        rows.append(row)
 
     except KeyboardInterrupt:
         print("\nInterrupted.")
