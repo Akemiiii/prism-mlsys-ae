@@ -119,6 +119,13 @@ def normalize_draft_path(path: str) -> str:
     return "" if p in {"", "-", "NONE", "none"} else p
 
 
+def with_draft_model_prefix(path: str, prefix: str) -> str:
+    p = Path(path)
+    if p.is_absolute():
+        return str(p)
+    return str(Path(prefix) / p)
+
+
 def build_server_cmd(args: argparse.Namespace, algorithm: str, draft_model_path: str) -> list[str]:
     cmd = [
         sys.executable,
@@ -169,19 +176,20 @@ def algorithm_name_for_csv(draft_model_path: str, fallback_algorithm: str) -> st
     if "LD" in p or "PRISM" in p:
         return "PRISM"
     if fallback_algorithm.upper() == "NONE":
-        return "Standalone"
+        return "NONE"
     return fallback_algorithm
 
 
 def main() -> int:
+    default_model_prefix = str((Path(__file__).resolve().parent / "../models").resolve())
     parser = argparse.ArgumentParser(description="Start sglang, run multi-dataset evaluation, and write CSV.")
     parser.add_argument("--port", type=int, default=30000)
     parser.add_argument("--startup-timeout", type=int, default=180)
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--num-questions", type=int, default=80)
-    parser.add_argument("--output-csv", default="evaluation/benchmark_results.csv")
-    parser.add_argument("--server-log", default="evaluation/sglang_server.log")
-    parser.add_argument("--model-path", default="/mnt/data1/ytchen/cache/Llama-2-7b-chat-hf")
+    parser.add_argument("--output-csv", default="evaluation/e2e_llama2.csv")
+    parser.add_argument("--server-log", default="evaluation/logs/e2e_llama2_server.log")
+    parser.add_argument("--model-path", default=str(Path(default_model_prefix) / "Llama-2-7b-chat-hf"))
     parser.add_argument(
         "--algorithms",
         nargs="+",
@@ -191,8 +199,13 @@ def main() -> int:
     parser.add_argument(
         "--draft-model-paths",
         nargs="+",
-        default=["-", "/mnt/data2/ytchen/prism-mlsys-ae/models/EAGLE2-800K-SGLANG/llama2-7b", "/mnt/data2/ytchen/prism-mlsys-ae/models/HASS-800K-SGLANG/llama2-7b", "/mnt/data2/ytchen/prism-mlsys-ae/models/LD-800k"],
-        help="One-to-one with --algorithms; for NONE use '-'",
+        default=["-", "EAGLE2-800K-SGLANG/llama2-7b", "HASS-800K-SGLANG/llama2-7b", "LD-800k"],
+        help="One-to-one with --algorithms; for NONE use '-'. Non-absolute paths use --draft-model-prefix.",
+    )
+    parser.add_argument(
+        "--draft-model-prefix",
+        default=default_model_prefix,
+        help="Common prefix for draft model paths. Applied to each --draft-model-paths entry except '-' and absolute paths.",
     )
     parser.add_argument("--datasets", nargs="*", default=DEFAULT_DATASETS)
     args = parser.parse_args()
@@ -214,7 +227,10 @@ def main() -> int:
     if len(args.draft_model_paths) != len(algorithms):
         print("[Error] --draft-model-paths must have the same length as --algorithms", file=sys.stderr)
         return 1
-    draft_paths = [normalize_draft_path(p) for p in args.draft_model_paths]
+    draft_paths = [
+        with_draft_model_prefix(normalized, args.draft_model_prefix) if normalized else ""
+        for normalized in (normalize_draft_path(p) for p in args.draft_model_paths)
+    ]
 
     for algo, draft_path in zip(algorithms, draft_paths):
         if not algo:

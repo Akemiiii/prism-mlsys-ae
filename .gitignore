@@ -1,2 +1,6 @@
 models/*
 wheels/
+evaluation/client/answer.jsonl
+evaluation/*/*.csv
+evaluation/*/logs/*.log
+__pycache__/
