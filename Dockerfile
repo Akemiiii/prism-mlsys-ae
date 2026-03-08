@@ -20,7 +20,7 @@ RUN cd sglang && python3 -m pip install --upgrade pip "setuptools<81" wheel && \
     -e "python[${BUILD_TYPE}]" \
     --find-links ./wheels
 
-RUN python3 -m pip install -i https://mirrors.aliyun.com/pypi/simple matplotlib
+RUN python3 -m pip install -i https://mirrors.aliyun.com/pypi/simple matplotlib modelscope
 
 RUN python3 -m venv /prism/sglang054 && \
     . /prism/sglang054/bin/activate && \
