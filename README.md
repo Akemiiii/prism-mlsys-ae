@@ -59,9 +59,7 @@ bash model_download_hf.sh
 
 Here are step-by-step instructions for reproducing the evaluation results in the paper. 
 
-Please note that, due to the difference machine setups mentioned in Due to the difference in machine setups mentioned in the second section, the evaluation results will be different from what shown in the paper. However, the evaluation results should follow similar trend with what we've shown in the paper and support the same claims.
-
-Each script list below launch a sequence of experiments with different configurations. The evaluation of a single configuration takes around 15 minutes.
+Please note that, due to the difference machine setups, the evaluation results will be different from what shown in the paper. However, the evaluation results should follow similar trend with what we've shown in the paper and support the same claims.
 
 
 ### Figure 7 (1.5 hours)
@@ -104,4 +102,25 @@ python evaluation/figure8/e2e_llama2_tree_verify_sweep.py \
 The default tree sweep config is  matching the settings used in the paper. You can also run `python evaluation/figure8/e2e_llama2_tree_verify_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure8/e2e_llama2_tree_verify_sweep_avg.csv` and `evaluation/figure8/e2e_llama2_tree_verify_sweep_detail.csv`.
 
 ### Table 4 and Table 5 (2 hours for 2 x NVIDIA A800 GPUs)
+
+On a single machine in this AE setup, you can only reproduce Table 4. To reproduce Table 5, you need another machine with a different GPU type.
+
+Please use the following commands to run the Table 4 experiments.
+
+If you have two or more GPUs, pass two GPU IDs (comma-separated). The script will use the first two IDs and run LLaMA-2 and LLaMA-3 in parallel. For example:
+
+```bash
+cd evaluation/table4
+./run_table4.sh 0,1
+```
+
+If you only have one GPU, pass a single GPU ID. The script will run LLaMA-2 and LLaMA-3 sequentially on the same GPU. For example:
+
+```bash
+cd evaluation/table4
+./run_table4.sh 0
+```
+
+The results are saved in `evaluation/table4`, including `evaluation/table4/e2e_llama2.csv`, `evaluation/table4/e2e_llama3.csv`, and `evaluation/table4/table4.pdf`. You could compare the generated `table4.pdf` with Table 4 in the paper to verify that the reproduced results match the reported performance trends.
+
 
