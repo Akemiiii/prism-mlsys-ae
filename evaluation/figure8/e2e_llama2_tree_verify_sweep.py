@@ -289,6 +289,7 @@ def main() -> int:
     try:
         for num_steps, eagle_topk, num_draft_tokens in sweep_configs:
             for algorithm, draft_path in zip(algorithms, draft_paths):
+                csv_algorithm = "PRISM" if algorithm == "LD" else algorithm
                 server_proc = None
                 run_key = (
                     f"{algorithm.lower()}_s{num_steps}_k{eagle_topk}_d{num_draft_tokens}"
@@ -328,8 +329,7 @@ def main() -> int:
                         for dataset in args.datasets:
                             per_run_rows.append(
                                 {
-                                    "algorithm": algorithm,
-                                    "draft_model_path": draft_path,
+                                    "algorithm": csv_algorithm,
                                     "speculative_num_steps": num_steps,
                                     "speculative_eagle_topk": eagle_topk,
                                     "speculative_num_draft_tokens": num_draft_tokens,
@@ -356,8 +356,7 @@ def main() -> int:
                                 temperature=args.temperature,
                                 num_questions=args.num_questions,
                             )
-                            one["algorithm"] = algorithm
-                            one["draft_model_path"] = draft_path
+                            one["algorithm"] = csv_algorithm
                             one["speculative_num_steps"] = num_steps
                             one["speculative_eagle_topk"] = eagle_topk
                             one["speculative_num_draft_tokens"] = num_draft_tokens
@@ -374,8 +373,7 @@ def main() -> int:
                 ok_count = sum(1 for r in per_run_rows if r.get("status") == "ok")
 
                 summary_row = {
-                    "algorithm": algorithm,
-                    "draft_model_path": draft_path,
+                    "algorithm": csv_algorithm,
                     "speculative_num_steps": num_steps,
                     "speculative_eagle_topk": eagle_topk,
                     "speculative_num_draft_tokens": num_draft_tokens,
@@ -399,7 +397,6 @@ def main() -> int:
             f,
             fieldnames=[
                 "algorithm",
-                "draft_model_path",
                 "speculative_num_steps",
                 "speculative_eagle_topk",
                 "speculative_num_draft_tokens",
@@ -419,7 +416,6 @@ def main() -> int:
             f,
             fieldnames=[
                 "algorithm",
-                "draft_model_path",
                 "speculative_num_steps",
                 "speculative_eagle_topk",
                 "speculative_num_draft_tokens",
