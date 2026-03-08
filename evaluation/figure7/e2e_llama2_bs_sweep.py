@@ -129,6 +129,8 @@ def build_server_cmd(
     draft_model_path: str,
     max_running_requests: int,
 ) -> list[str]:
+    # Keep user-facing naming as PRISM, but sglang still expects LD.
+    sglang_algorithm = "LD" if algorithm == "PRISM" else algorithm
     cmd = [
         sys.executable,
         "-m",
@@ -148,7 +150,7 @@ def build_server_cmd(
         cmd.extend(
             [
                 "--speculative-algorithm",
-                algorithm,
+                sglang_algorithm,
                 "--speculative-draft-model-path",
                 draft_model_path,
                 "--speculative-num-steps",
@@ -204,8 +206,8 @@ def main() -> int:
     parser.add_argument(
         "--algorithms",
         nargs="+",
-        default=["NONE", "EAGLE", "LD"],
-        help="Speculative algorithms to test. Example: NONE EAGLE LD",
+        default=["NONE", "EAGLE", "PRISM"],
+        help="Speculative algorithms to test. Example: NONE EAGLE PRISM",
     )
     parser.add_argument(
         "--draft-model-paths",
@@ -282,7 +284,6 @@ def main() -> int:
                             per_run_rows.append(
                                 {
                                     "algorithm": algorithm,
-                                    "draft_model_path": draft_path,
                                     "max_running_requests": max_rr,
                                     "dataset": Path(dataset).parts[-2]
                                     if len(Path(dataset).parts) >= 2
@@ -308,7 +309,6 @@ def main() -> int:
                                 num_questions=args.num_questions,
                             )
                             one["algorithm"] = algorithm
-                            one["draft_model_path"] = draft_path
                             one["max_running_requests"] = max_rr
                             per_run_rows.append(one)
 
@@ -324,7 +324,6 @@ def main() -> int:
 
                 summary_row = {
                     "algorithm": algorithm,
-                    "draft_model_path": draft_path,
                     "max_running_requests": max_rr,
                     "num_datasets": len(per_run_rows),
                     "num_success": ok_count,
@@ -346,7 +345,6 @@ def main() -> int:
             f,
             fieldnames=[
                 "algorithm",
-                "draft_model_path",
                 "max_running_requests",
                 "dataset",
                 "question_file",
@@ -364,7 +362,6 @@ def main() -> int:
             f,
             fieldnames=[
                 "algorithm",
-                "draft_model_path",
                 "max_running_requests",
                 "num_datasets",
                 "num_success",
