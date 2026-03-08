@@ -8,9 +8,8 @@ This is the artifact evaluation repo for PRISM.
 #### Using the Provided Machine
 
 Please spin up a machine with the following characteristics:
-- GPU(s) with more than 80GB HBM (**Recommended**: NVIDIA A100-SXM4-80GB GPU)
-- Docker support with NVIDIA container runtime
-- 100GB+ disk memory
+- At least one GPU with more than 80GB HBM (**Recommended**: 4 x NVIDIA A100-SXM4-80GB GPUs)
+- 200GB disk memory
 
 ### Preparation
 
@@ -48,6 +47,14 @@ cd evaluation/
 bash model_download.sh
 ```
 
+By default, `model_download.sh` downloads models from ModelScope.
+If the download speed is too slow, you can use the backup Hugging Face script instead:
+
+```bash
+cd evaluation/
+bash model_download_hf.sh
+```
+
 ## Running the Experiments
 
 Here are step-by-step instructions for reproducing the evaluation results in the paper. 
@@ -56,93 +63,45 @@ Please note that, due to the difference machine setups mentioned in Due to the d
 
 Each script list below launch a sequence of experiments with different configurations. The evaluation of a single configuration takes around 15 minutes.
 
-### Figure 8 and 9
 
-Use the following commands to run the experiments for Figure 8 and 9. To run the evaluation for LLaMA-3.1-70B-Instruct:
+### Figure 7 (1.5 hours)
 
-```bash
-ADASERVE=ON RPS_MIN=2.6 RPS_MAX=4.8 ./exps/fig8,9/run_llama_rps.sh
+Please use the following commands to run the experiments for Figure 7:
+
+```base
+cd evaluation/figure7
+./run_figure7.sh
 ```
 
-To run the evaluation for Qwen2.5-32B-Instruct:
+The results are saved in `evaluation/figure7` including `evaluation/figure7/e2e_llama2_bs_sweep_avg.csv` and `evaluation/figure7/figure7.pdf`. You could compare the generated `figure7.pdf` with Figure 7 in the paper to verify that the reproduced results match the reported performance trends.
+
+If you are interested in experimenting with different batch size settings, you can pass a custom list of values via the `--batch-size` argument when invoking `evaluation/figure7/e2e_llama2_bs_sweep.py` directly. For example:
 
 ```bash
-ADASERVE=ON RPS_MIN=2.4 RPS_MAX=4.2 ./exps/fig8,9/run_qwen_rps.sh
+python evaluation/figure7/e2e_llama2_bs_sweep.py --batch-size 10 12
 ```
 
-`RPS_MIN` and `RPS_MAX` can be adjusted to cover different RPS ranges. The minimal RPS is 2.6 and the maximal RPS is 4.8 for LLaMA-3.1-70B-Instruct on our evaluation. The minimal RPS is 2.4 and the maximal RPS is 4.2 for Qwen2.5-32B-Instruct on our evaluation. The minimal step size is set to 0.2.
+The default sweep is `2 4 8 16 32`, matching the settings used in the paper. You can also run `python evaluation/figure7/e2e_llama2_bs_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure7/e2e_llama2_bs_sweep_avg.csv` and `evaluation/figure7/e2e_llama2_bs_sweep_detail.csv`.
 
+### Figure 8 （1 hour)
 
-The results are saved in `results/fig8,9/llama/adaserve/` and `results/fig8,9/qwen/adaserve/`.
+Please use the following commands to run the experiments for Figure 8:
 
-### Figure 10
-
-Use the following commands to run the experiments for Figure 10. To run the evaluation for LLaMA-3.1-70B-Instruct:
-
-```bash
-ADASERVE=ON PROP_MIN=0.2 PROP_MAX=0.9 ./exps/fig10/run_llama_prop.sh
+```base
+cd evaluation/figure8
+./run_figure8.sh
 ```
 
-To run the evaluation for Qwen2.5-32B-Instruct:
+The results are saved in `evaluation/figure8` including `evaluation/figure8/e2e_llama2_tree_verify_sweep_avg.csv` and `evaluation/figure8/figure8.pdf`. You could compare the generated `figure8.pdf` with Figure 8 in the paper to verify that the reproduced results match the reported performance trends.
+
+If you are interested in experimenting with different tree settings, you can pass a custom list of values via the `--sweep-configs` argument when invoking `evaluation/figure8/e2e_llama2_tree_verify_sweep.py` directly. For example:
 
 ```bash
-ADASERVE=ON PROP_MIN=0.2 PROP_MAX=0.9 ./exps/fig10/run_qwen_prop.sh
-``` 
-
-`PROP_MIN` and `PROP_MAX` can be adjusted to cover different proportion ranges. The minimal proportion is 0.1 and the maximal proportion is 0.9 for both LLaMA-3.1-70B-Instruct and Qwen2.5-32B-Instruct on our evaluation. The minimal step size is 0.1.
-
-The results are saved in `results/fig10/llama/adaserve/` and `results/fig10/qwen/adaserve/`.
-
-### Figure 11
-
-Use the following commands to run the experiments for Figure 11. To run the evaluation for LLaMA-3.1-70B-Instruct:
-
-```bash
-ADASERVE=ON SLO_SCALE_MIN=0.6 SLO_SCALE_MAX=1.6 OUTPUT_LENGTH=256 ./exps/fig11/run_llama_slo.sh
+python evaluation/figure8/e2e_llama2_tree_verify_sweep.py \
+  --sweep-configs 3,2,6 5,8,32 8,10,64
 ```
 
-To run the evaluation for Qwen2.5-32B-Instruct:
+The default tree sweep config is  matching the settings used in the paper. You can also run `python evaluation/figure8/e2e_llama2_tree_verify_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure8/e2e_llama2_tree_verify_sweep_avg.csv` and `evaluation/figure8/e2e_llama2_tree_verify_sweep_detail.csv`.
 
-```bash
-ADASERVE=ON SLO_SCALE_MIN=0.6 SLO_SCALE_MAX=1.6 OUTPUT_LENGTH=256 ./exps/fig11/run_qwen_slo.sh
-```
+### Table 4 and Table 5 (2 hours for 2 x NVIDIA A800 GPUs)
 
-`SLO_SCALE_MIN` and `SLO_SCALE_MAX` can be adjusted to cover different SLO ranges. The minimal SLO scale is 0.6 and the maximal SLO scale is 1.6 for both LLaMA-3.1-70B-Instruct and Qwen2.5-32B-Instruct on our evaluation. The minimal step size is 0.2.
-
-The results are saved in `results/fig11/llama/adaserve/` and `results/fig11/qwen/adaserve/`.
-
-### Figure 12
-
-The data for Figure 12 is collected during the experiments for Figure 8 and 9. You can find the data in `results/fig8,9/llama/adaserve/` and `results/fig8,9/qwen/adaserve/`. The number is reported in the line starting with `mean_generated_tokens_per_step` at the end of the files.
-
-### Figure 14   
-
-Use the following commands to run the experiments for Figure 14. To run the evaluation for LLaMA-3.1-70B-Instruct:
-
-```bash
-ADASERVE=ON ./exps/fig14/run_llama_fluc.sh
-```
-
-To run the evaluation for Qwen2.5-32B-Instruct:
-
-```bash
-ADASERVE=ON ./exps/fig14/run_qwen_fluc.sh
-```
-
-The results are saved in `results/fig14/llama/adaserve/` and `results/fig14/qwen/adaserve/`.
-
-### Figure 15
-
-Use the following commands to run the experiments for Figure 15. To run the evaluation for LLaMA-3.1-70B-Instruct:
-
-```bash
-LLAMA_OVERHEAD=ON ./exps/fig15/run_overhead_breakdown.sh
-```
-
-To run the evaluation for Qwen2.5-32B-Instruct:
-
-```bash
-QWEN_OVERHEAD=ON ./exps/fig15/run_overhead_breakdown.sh
-```
-
-The results are saved in `results/fig15/llama/` and `results/fig15/qwen/`.
