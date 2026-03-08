@@ -3,4 +3,8 @@ wheels/
 evaluation/client/answer.jsonl
 evaluation/*/*.csv
 evaluation/*/logs/*.log
+evaluation/figure4/outputs
+evaluation/figure4/*.out
+PRISM/outputs
+PRISM_legacy/outputs
 __pycache__/
