@@ -220,7 +220,7 @@ def main() -> int:
         default=default_model_prefix,
         help="Common prefix for draft model paths. Applied to non-absolute entries except '-'.",
     )
-    parser.add_argument("--max-running-requests", nargs="+", type=int, default=[2, 4, 8, 16, 32])
+    parser.add_argument("--batch-size", nargs="+", type=int, default=[2, 4, 8, 16, 32])
     parser.add_argument("--datasets", nargs="*", default=DEFAULT_DATASETS)
     args = parser.parse_args()
 

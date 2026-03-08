@@ -247,7 +247,7 @@ def main() -> int:
         "--sweep-configs",
         nargs="*",
         default=[f"{s},{k},{d}" for s, k, d in DEFAULT_SWEEP_CONFIGS],
-        help="List of tuples in CSV form: steps,topk,draft_tokens",
+        help="List of tuples in CSV form: steps,topk,verify_tokens",
     )
     args = parser.parse_args()
 
