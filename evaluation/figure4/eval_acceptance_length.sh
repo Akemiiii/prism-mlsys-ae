@@ -12,8 +12,9 @@ set -euo pipefail
 # -----------------------------
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 PROJECT="${PROJECT:-Llama-3-8B}"
-MODEL="${MODEL:-HASS-2}"
+MODEL="${MODEL:-Eagle3}"
 RUN_TAG="${RUN_TAG:-$(date +%Y%m%d_%H%M%S)}"
+BENCHES="${BENCHES:-}"
 
 usage() {
   cat <<'EOF'
@@ -22,9 +23,12 @@ Usage:
 
 Options:
   --gpus <list>          CUDA_VISIBLE_DEVICES, e.g. 0,1,2,3
-  --project <name>       PROJECT, e.g. Llama-3-8B
-  --model <name>         MODEL, e.g. PRISM / Eagle2 / HASS
+  --project <name>       PROJECT, e.g. Llama-2-7B / Llama-3-8B
+  --model <name>         MODEL, e.g. PRISM / Eagle2 / Eagle3 / HASS
   --run-tag <tag>        RUN_TAG for eval_all output folder
+  --benches <list>       Comma-separated benchmarks to run, e.g. mt_bench,humaneval
+                         Available: mt_bench, humaneval, gsm8k, alpaca, sum, qa
+                         Default: all 6 benchmarks
   -h, --help             Show help
 EOF
 }
@@ -42,6 +46,8 @@ while [[ $# -gt 0 ]]; do
       MODEL="$2"; shift 2 ;;
     --run-tag)
       RUN_TAG="$2"; shift 2 ;;
+    --benches)
+      BENCHES="$2"; shift 2 ;;
     -h|--help)
       usage; exit 0 ;;
     *)
@@ -74,16 +80,21 @@ FIG4_DIR="${ROOT_DIR}/evaluation/figure4"
 # Codebase directories
 PRISM_DIR="${ROOT_DIR}/PRISM"
 PRISM_LEGACY_DIR="${ROOT_DIR}/PRISM_legacy"
+EAGLE3_DIR="${ROOT_DIR}/Eagle3"
 
 # -----------------------------
 # Select codebase by model:
-# Use PRISM only when MODEL == PRISM (case-insensitive)
-# Otherwise use PRISM_legacy
+#   MODEL == PRISM  (case-insensitive) => PRISM
+#   MODEL == Eagle3 (case-insensitive) => Eagle3
+#   Otherwise                          => PRISM_legacy
 # -----------------------------
 MODEL_UPPER="$(echo "${MODEL}" | tr '[:lower:]' '[:upper:]')"
 if [[ "${MODEL_UPPER}" == "PRISM" ]]; then
   CODEBASE_DIR="${PRISM_DIR}"
   ENGINE_NAME="PRISM"
+elif [[ "${MODEL_UPPER}" == "EAGLE3" ]]; then
+  CODEBASE_DIR="${EAGLE3_DIR}"
+  ENGINE_NAME="Eagle3"
 else
   CODEBASE_DIR="${PRISM_LEGACY_DIR}"
   ENGINE_NAME="PRISM_legacy"
@@ -117,6 +128,7 @@ echo "  CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
 echo "  PROJECT=${PROJECT}"
 echo "  MODEL=${MODEL}"
 echo "  RUN_TAG=${RUN_TAG}"
+echo "  BENCHES=${BENCHES:-<all>}"
 
 pushd "${CODEBASE_DIR}" >/dev/null
 
@@ -125,7 +137,8 @@ CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}" \
 PROJECT="${PROJECT}" \
 MODEL="${MODEL}" \
 RUN_TAG="${RUN_TAG}" \
-bash "${EVAL_SH}" "${PROJECT}" "${MODEL}"
+BENCHES="${BENCHES}" \
+bash "${EVAL_SH}" "${PROJECT}" "${MODEL}" "${BENCHES}"
 EVAL_RC=$?
 set -e
 

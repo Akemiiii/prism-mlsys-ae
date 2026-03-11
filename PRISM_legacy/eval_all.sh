@@ -11,21 +11,96 @@ set -o pipefail
 # =========================
 # Config (overridable)
 # =========================
-#export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3}"
-#export PROJECT="${PROJECT:-Llama-3-8B}"   # e.g. Llama-3-8B
-#export MODEL="${MODEL:-Eagle2}"            # e.g. HASS -> HASS-100k, HASS-200k ...
-
 # Optional args:
-#   sbatch run_eval.sbatch <PROJECT> <MODEL>
-PROJECT="${1:-$PROJECT}"
-MODEL="${2:-$MODEL}"
+#   sbatch run_eval.sbatch <PROJECT> <MODEL> [BENCHES]
+#   BENCHES is a comma-separated list, e.g. "mt_bench,humaneval,gsm8k"
+PROJECT="${1:-${PROJECT:-Llama-3-8B}}"
+MODEL="${2:-${MODEL:-PRISM}}"
+BENCHES_ARG="${3:-${BENCHES:-}}"
 
 REPO_ROOT="$(pwd)"
 export PYTHONPATH="${REPO_ROOT}:${PYTHONPATH:-}"
 
-CKPT_ROOT="$(cd "${REPO_ROOT}/.." && pwd)/models/${PROJECT}-drafter"
-BASE_MODEL_PATH="$(cd "${REPO_ROOT}/.." && pwd)/models/${PROJECT}-Instruct"
+MODEL_ROOT="$(cd "${REPO_ROOT}/.." && pwd)/models"
+
+# Keep PROJECT for drafter/config layout
+CKPT_ROOT="${MODEL_ROOT}/${PROJECT}-drafter"
 EA_CONFIG_PATH="${REPO_ROOT}/train/${PROJECT}/${MODEL}_config.json"
+
+# Resolve base model path by project alias
+# Priority:
+# 1) BASE_MODEL_PATH env override
+# 2) Auto mapping by PROJECT
+if [[ -n "${BASE_MODEL_PATH:-}" ]]; then
+  BASE_MODEL_PATH="${BASE_MODEL_PATH}"
+else
+  PROJECT_KEY="$(echo "${PROJECT}" | tr '[:upper:]' '[:lower:]')"
+  case "${PROJECT_KEY}" in
+    llama-2-7b|llama-2-7b-instruct|llama-2-7b-chat-hf)
+      BASE_MODEL_PATH="${MODEL_ROOT}/Llama-2-7b-chat-hf"
+      ;;
+    llama-3-8b|llama-3-8b-instruct)
+      BASE_MODEL_PATH="${MODEL_ROOT}/Llama-3-8B-Instruct"
+      ;;
+    *)
+      BASE_MODEL_PATH="${MODEL_ROOT}/${PROJECT}-Instruct"
+      ;;
+  esac
+fi
+
+# =========================
+# Resolve generation script by PROJECT + MODEL
+# =========================
+# Rule:
+#   MODEL == Eagle3 (only with Llama-3-8B) => gen_ea_answer_llama3chat.py
+#   PROJECT ~ Llama-3-*                     => gen_ea_answer_llama3chat.py
+#   PROJECT ~ Llama-2-*                     => gen_ea_answer_llama2chat.py
+#   fallback                                => gen_ea_answer_llama3chat.py
+# =========================
+MODEL_KEY="$(echo "${MODEL}" | tr '[:upper:]' '[:lower:]')"
+PROJECT_KEY="$(echo "${PROJECT}" | tr '[:upper:]' '[:lower:]')"
+
+if [[ "${MODEL_KEY}" == "eagle3" ]]; then
+  GEN_SCRIPT="${REPO_ROOT}/evaluation/gen_ea_answer_llama3chat.py"
+else
+  case "${PROJECT_KEY}" in
+    llama-2-7b|llama-2-7b-instruct|llama-2-7b-chat-hf)
+      GEN_SCRIPT="${REPO_ROOT}/evaluation/gen_ea_answer_llama2chat.py"
+      ;;
+    llama-3-8b|llama-3-8b-instruct)
+      GEN_SCRIPT="${REPO_ROOT}/evaluation/gen_ea_answer_llama3chat.py"
+      ;;
+    *)
+      GEN_SCRIPT="${REPO_ROOT}/evaluation/gen_ea_answer_llama3chat.py"
+      echo "[WARN] Unknown PROJECT '${PROJECT}', defaulting to gen_ea_answer_llama3chat.py"
+      ;;
+  esac
+fi
+
+# =========================
+# Resolve benchmarks
+# =========================
+ALL_BENCHES=("mt_bench" "humaneval" "gsm8k" "alpaca" "sum" "qa")
+
+if [[ -n "${BENCHES_ARG}" ]]; then
+  IFS=',' read -r -a BENCHES <<< "${BENCHES_ARG}"
+  # Validate user-specified benchmarks
+  for b in "${BENCHES[@]}"; do
+    found=0
+    for ab in "${ALL_BENCHES[@]}"; do
+      if [[ "${b}" == "${ab}" ]]; then
+        found=1
+        break
+      fi
+    done
+    if [[ "${found}" -eq 0 ]]; then
+      echo "[FATAL] Unknown benchmark '${b}'. Available: ${ALL_BENCHES[*]}"
+      exit 1
+    fi
+  done
+else
+  BENCHES=("${ALL_BENCHES[@]}")
+fi
 
 # =========================
 # Output layout (simplified)
@@ -44,7 +119,6 @@ cd "${RESULT_ROOT}"
 # Tasks
 # =========================
 SUFFIXES=("100k" "200k" "400k" "600k" "800k")
-BENCHES=("mt_bench" "humaneval" "gsm8k" "alpaca" "sum" "qa")
 TEMPS=("0.0" "1.0")
 
 # =========================
@@ -69,6 +143,16 @@ if [[ ! -f "${EA_CONFIG_PATH}" ]]; then
   exit 1
 fi
 
+if [[ ! -d "${BASE_MODEL_PATH}" ]]; then
+  echo "[FATAL] BASE_MODEL_PATH not found: ${BASE_MODEL_PATH}"
+  exit 1
+fi
+
+if [[ ! -f "${GEN_SCRIPT}" ]]; then
+  echo "[FATAL] GEN_SCRIPT not found: ${GEN_SCRIPT}"
+  exit 1
+fi
+
 TMP_QUEUE_DIR="$(mktemp -d -p "${RESULT_ROOT}" "gpu_queues_${SLURM_JOB_ID:-$$}_XXXX")"
 cleanup() { rm -rf "${TMP_QUEUE_DIR}"; }
 trap cleanup EXIT
@@ -81,8 +165,11 @@ echo "RESULT_ROOT=${RESULT_ROOT}"
 echo "LOG_DIR=${LOG_DIR}"
 echo "PROJECT=${PROJECT}"
 echo "MODEL=${MODEL}"
+echo "GEN_SCRIPT=${GEN_SCRIPT}"
+echo "BENCHES=${BENCHES[*]}"
 echo "CUDA_VISIBLE_DEVICES(raw)=${GPU_STR}"
 echo "Parsed GPUs: ${GPUS[*]}"
+echo "MODEL_ROOT=${MODEL_ROOT}"
 echo "CKPT_ROOT=${CKPT_ROOT}"
 echo "EA_CONFIG_PATH=${EA_CONFIG_PATH}"
 echo "BASE_MODEL_PATH=${BASE_MODEL_PATH}"
@@ -148,7 +235,7 @@ run_one_task() {
   local log_file="${LOG_DIR}/${name}__${bench_name}__temp-${temperature}__gpu-${gpu}.log"
   local ld_json="${bench_name}/${name}-temperature-${temperature}.jsonl"
 
-  # baseline compatible locations
+  # Baseline compatible locations
   local baseline_json_new="${bench_name}/Naive-temperature-${temperature}.jsonl"
   local baseline_json_old="${bench_name}/${PROJECT}/Naive-temperature-${temperature}.jsonl"
   local baseline_json=""
@@ -160,6 +247,7 @@ run_one_task() {
     echo "start: $(date)"
     echo "gpu=${gpu}, name=${name}, bench=${bench_name}, temp=${temperature}"
     echo "EA_MODEL_PATH=${ea_model_path}"
+    echo "GEN_SCRIPT=${GEN_SCRIPT}"
     echo "CWD=${PWD}"
 
     if [[ ! -d "${ea_model_path}" ]]; then
@@ -168,7 +256,7 @@ run_one_task() {
     fi
 
     if [[ "${task_fail}" -eq 0 ]]; then
-      if ! CUDA_VISIBLE_DEVICES="${gpu}" python "${REPO_ROOT}/evaluation/gen_ea_answer_llama3chat.py" \
+      if ! CUDA_VISIBLE_DEVICES="${gpu}" python "${GEN_SCRIPT}" \
         --ea-model-path "${ea_model_path}" \
         --base-model-path "${BASE_MODEL_PATH}" \
         --model-id "${name}" \
@@ -178,7 +266,7 @@ run_one_task() {
         --top-k 10 \
         --temperature "${temperature}"
       then
-        echo "[ERROR] gen_ea_answer_llama3chat.py failed"
+        echo "[ERROR] ${GEN_SCRIPT##*/} failed"
         task_fail=1
       fi
     fi

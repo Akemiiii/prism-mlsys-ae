@@ -2,8 +2,8 @@
 #SBATCH -J PRISM
 #SBATCH -p gpu
 #SBATCH -N 1
-#SBATCH -n 64
-#SBATCH --gres=gpu:4
+#SBATCH -n 32
+#SBATCH --gres=gpu:2
 
 set -u
 set -o pipefail
@@ -15,7 +15,7 @@ set -o pipefail
 #   sbatch run_eval.sbatch <PROJECT> <MODEL> [BENCHES]
 #   BENCHES is a comma-separated list, e.g. "mt_bench,humaneval,gsm8k"
 PROJECT="${1:-${PROJECT:-Llama-3-8B}}"
-MODEL="${2:-${MODEL:-PRISM}}"
+MODEL="${2:-${MODEL:-Eagle3}}"
 BENCHES_ARG="${3:-${BENCHES:-}}"
 
 REPO_ROOT="$(pwd)"
@@ -264,7 +264,8 @@ run_one_task() {
         --total-token 60 \
         --depth 5 \
         --top-k 10 \
-        --temperature "${temperature}"
+        --temperature "${temperature}" \
+	--use_eagle3
       then
         echo "[ERROR] ${GEN_SCRIPT##*/} failed"
         task_fail=1

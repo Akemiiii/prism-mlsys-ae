@@ -137,7 +137,7 @@ exps = {
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--outputs-root", type=str, default="./outputs")
-    parser.add_argument("--project", type=str, default="llama-3-8b")
+    parser.add_argument("--project", type=str, default="Llama-3-8B")
     parser.add_argument(
         "--suffix",
         type=str,

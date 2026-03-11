@@ -238,7 +238,7 @@ BENCH_TO_LOGKEY = {
 PANEL_SPECS = [
     {
         "title": "LLaMA-2-7B",
-        "project": "llama-2-7b",
+        "project": "Llama-2-7B",
         "config": config_1,
         "exps_default": exps_1,
         # Candidate model directory names under outputs/<project>/
@@ -250,7 +250,7 @@ PANEL_SPECS = [
     },
     {
         "title": "LLaMA-3-8B",
-        "project": "llama-3-8b",
+        "project": "Llama-3-8B",
         "config": config_2,
         "exps_default": exps_2,
         "model_dir_candidates": {
