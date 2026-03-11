@@ -13,7 +13,7 @@ Please spin up a machine with the following characteristics:
 
 ### Preparation
 
-**Recommended: Use the provided docker image to run the experiments. If you use the docker image, you can skip the steps 1-3 below.**
+**Recommended: Use the provided docker image to run the experiments. If you use the docker image, you can skip the steps 1-5 below.**
 
 Please note: if you are using a shared server with other reviewers, please avoid environment conflicts:
 - If you use Docker, make sure your container name is unique to avoid collisions with other running containers.
@@ -41,7 +41,21 @@ pip install sglang==0.5.4
 deactivate
 ```
 
-4. Download the models with
+4. Install python enviroment for Prism implemented on top of pytorch (TO CHECK)
+```bash
+conda create -n Prism python=3.12 -y
+conda activate Prism
+pip install -r requirements.txt
+```
+
+5. Install python environment for Eagle3
+```bash
+conda create -n Eagle3 python=3.12 -y
+conda activate Eagle3
+pip install -r requirements_eagle3.txt
+```
+
+6. Download the models with
 ```bash
 cd evaluation/
 bash model_download.sh
@@ -81,7 +95,7 @@ python evaluation/figure7/e2e_llama2_bs_sweep.py --batch-size 10 12
 
 The default sweep is `2 4 8 16 32`, matching the settings used in the paper. You can also run `python evaluation/figure7/e2e_llama2_bs_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure7/e2e_llama2_bs_sweep_avg.csv` and `evaluation/figure7/e2e_llama2_bs_sweep_detail.csv`.
 
-### Figure 8 （1 hour)
+### Figure 8 （1 hour）
 
 Please use the following commands to run the experiments for Figure 8:
 
@@ -123,4 +137,46 @@ cd evaluation/table4
 
 The results are saved in `evaluation/table4`, including `evaluation/table4/e2e_llama2.csv`, `evaluation/table4/e2e_llama3.csv`, and `evaluation/table4/table4.pdf`. You could compare the generated `table4.pdf` with Table 4 in the paper to verify that the reproduced results match the reported performance.
 
+### Figure 4 （6 hour for 8 x NVIDIA A800 GPUs）
+We recommend running the experiemnt of Figure 4 first, after which an output directory containing all log files will be created. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To start the experiment, just run
 
+```bash
+cd evaluation/figure4
+bash eval_acceptance_length.sh
+```
+
+If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
+
+```bash
+bash eval_acceptance_length.sh --benches humaneval,qa
+```
+
+After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
+
+```bash
+bash draw_figure4.sh
+```
+
+### Figure 1 （No extra time）
+If figure 4 experiments are done, you could draw figure 1 with
+
+```bash
+cd evaluation/figure4
+bash draw_figure1.sh
+```
+
+### Figure 5 （No extra time）
+If figure 4 experiments are done, you could draw figure 5 with
+
+```bash
+cd evaluation/figure4
+bash draw_figure5.sh
+```
+
+### Figure 6 （No extra time）
+If figure 4 experiments are done, you could draw figure 6 with
+
+```bash
+cd evaluation/figure4
+bash draw_figure6.sh
+```
