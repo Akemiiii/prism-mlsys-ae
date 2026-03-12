@@ -141,46 +141,48 @@ cd evaluation/table4
 
 The results are saved in `evaluation/table4`, including `evaluation/table4/e2e_llama2.csv`, `evaluation/table4/e2e_llama3.csv`, and `evaluation/table4/table4.pdf`. You could compare the generated `table4.pdf` with Table 4 in the paper to verify that the reproduced results match the reported performance.
 
-### Figure 4 （6 hour for 8 x NVIDIA A800 GPUs）
-We recommend running the experiemnt of Figure 4 first, after which an output directory containing all log files will be created. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To start the experiment, just run
+### Preparations for Figure 1,4,5,6（6 hour for 8 x NVIDIA A800 GPUs）
+To reproduce the results in Figure 1,4,5,6. We first evaluate all draft model architectures on all target models, which will generate log files recoding accept length and conditional acceptance ratio. The log files will later be parsed for drawing the diagrams. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To conduct the experiment, run
 
 ```bash
-cd evaluation/figure4
+cd evaluation/prep_figure1456
 bash eval_acceptance_length.sh
 ```
 
-If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
+This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
 
 ```bash
 bash eval_acceptance_length.sh --benches humaneval,qa
 ```
 
+### Figure 4 （No extra time）
 After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
 
 ```bash
+cd evaluation/figure4
 bash draw_figure4.sh
 ```
 
 ### Figure 1 （No extra time）
-If figure 4 experiments are done, you could draw figure 1 with
+Draw figure 1 with
 
 ```bash
-cd evaluation/figure4
+cd evaluation/figure1
 bash draw_figure1.sh
 ```
 
 ### Figure 5 （No extra time）
-If figure 4 experiments are done, you could draw figure 5 with
+Draw figure 5 with
 
 ```bash
-cd evaluation/figure4
+cd evaluation/figure5
 bash draw_figure5.sh
 ```
 
 ### Figure 6 （No extra time）
-If figure 4 experiments are done, you could draw figure 6 with
+Draw figure 6 with
 
 ```bash
-cd evaluation/figure4
+cd evaluation/figure6
 bash draw_figure6.sh
 ```
