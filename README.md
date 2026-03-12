@@ -157,13 +157,13 @@ To reproduce the results in Figure 1,4,5,6. We first evaluate all draft model ar
 
 ```bash
 cd evaluation/prep_figure1456
-bash eval_acceptance_length.sh
+bash eval_acceptance_length.sh --gpus 0,1
 ```
 
-This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
+Use `--gpus` to assign accelerators.This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
 
 ```bash
-bash eval_acceptance_length.sh --benches humaneval,qa
+bash eval_acceptance_length.sh --gpus --benches humaneval,qa
 ```
 
 The results are saved in `evaluation/prep_figure1456/outputs`. The log file for each experiment is saved at `evaluation/prep_figure1456/outputs/<TARGET MODEL NAME>/<DRAFT MODEL NAME>/latest/logs/`, where the acceptance length and conditional acceptance rate are reported.
@@ -171,7 +171,7 @@ The results are saved in `evaluation/prep_figure1456/outputs`. The log file for 
 You could also go into the code files to conduct a single experiment. For example, if you want to test PRISM on Llama-3-8B on MT-bench, run:
 ```bash
 cd PRISM
-PROJECT=Llama-3-8B MODEL=PRISM BENCHES=mt_bench bash eval_all.sh 
+CUDA_VISIBLE_DEVICES=0,1 PROJECT=Llama-3-8B MODEL=PRISM BENCHES=mt_bench bash eval_all.sh 
 ```
 
 Note that the PRISM code is only for the PRISM model; Eagle3 code is only for the Eagle3 model； All other models use the PRISM_legacy code for experimenting.
