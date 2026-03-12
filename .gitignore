@@ -7,4 +7,6 @@ evaluation/figure4/outputs
 evaluation/figure4/*.out
 PRISM/outputs
 PRISM_legacy/outputs
+Eagle3/outputs
+evaluation/prep_figure1456/outputs
 __pycache__/
