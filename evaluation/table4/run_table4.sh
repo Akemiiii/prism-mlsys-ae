@@ -4,10 +4,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-PARALLEL_SCRIPT="${SCRIPT_DIR}/run_table5_parallel.sh"
-LLAMA2_SCRIPT="${SCRIPT_DIR}/run_llama2_table5.sh"
-LLAMA3_SCRIPT="${SCRIPT_DIR}/run_llama3_table5.sh"
-PLOT_SCRIPT="${SCRIPT_DIR}/plot_table5_from_csv.py"
+PARALLEL_SCRIPT="${SCRIPT_DIR}/run_table4_parallel.sh"
+LLAMA2_SCRIPT="${SCRIPT_DIR}/run_llama2_table4.sh"
+LLAMA3_SCRIPT="${SCRIPT_DIR}/run_llama3_table4.sh"
+PLOT_SCRIPT="${SCRIPT_DIR}/plot_table4_from_csv.py"
 
 if [[ ! -f "$PARALLEL_SCRIPT" ]]; then
   echo "Error: script not found: $PARALLEL_SCRIPT" >&2
@@ -64,7 +64,7 @@ else
   bash "$LLAMA3_SCRIPT" "$GPU0" 30000
 fi
 
-echo "Generating table5 PDF..."
+echo "Generating table4 PDF..."
 python "$PLOT_SCRIPT"
 
-echo "Table 5 pipeline finished."
+echo "Table 4 pipeline finished."

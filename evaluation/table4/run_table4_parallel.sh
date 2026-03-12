@@ -16,16 +16,16 @@ if ! [[ "$GPU_LLAMA3" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
-echo "Starting parallel Table 5 runs..."
+echo "Starting parallel Table 4 runs..."
 echo "llama2 -> GPU ${GPU_LLAMA2} (port 30000), llama3 -> GPU ${GPU_LLAMA3} (port 30001)"
 
 start_llama2="$(date +%s)"
-./run_llama2_table5.sh "$GPU_LLAMA2" 30000 &
+./run_llama2_table4.sh "$GPU_LLAMA2" 30000 &
 pid_llama2=$!
 echo "llama2 started (pid=${pid_llama2})"
 
 start_llama3="$(date +%s)"
-./run_llama3_table5.sh "$GPU_LLAMA3" 30001 &
+./run_llama3_table4.sh "$GPU_LLAMA3" 30001 &
 pid_llama3=$!
 echo "llama3 started (pid=${pid_llama3})"
 

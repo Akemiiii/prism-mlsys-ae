@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render Table 5 style PDF from LLaMA-2/3 CSV results."""
+"""Render Table 4 style PDF from LLaMA-2/3 CSV results."""
 
 import argparse
 import csv
@@ -97,10 +97,10 @@ def merge_vertical_cells(table, col: int, start_row: int, end_row: int) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Draw Table 5 PDF using matplotlib table.")
+    parser = argparse.ArgumentParser(description="Draw Table 4 PDF using matplotlib table.")
     parser.add_argument("--llama2-csv", default="e2e_llama2.csv")
     parser.add_argument("--llama3-csv", default="e2e_llama3.csv")
-    parser.add_argument("--output", default="table5.pdf")
+    parser.add_argument("--output", default="table4.pdf")
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent

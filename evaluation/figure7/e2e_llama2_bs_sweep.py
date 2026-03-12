@@ -254,7 +254,7 @@ def main() -> int:
     all_summary_rows = []
 
     try:
-        for max_rr in args.max_running_requests:
+        for max_rr in args.batch_size:
             for algorithm, draft_path in zip(algorithms, draft_paths):
                 server_proc = None
                 run_key = f"{algorithm.lower()}_mrr{max_rr}"
