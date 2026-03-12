@@ -91,113 +91,6 @@ Here are step-by-step instructions for reproducing the evaluation results in the
 
 Please note that, due to the difference machine setups, the evaluation results will be different from what shown in the paper. However, the evaluation results should follow similar trend with what we've shown in the paper and support the same claims.
 
-### Preparations for Figure 1, 4, 5, 6（6 hours for 8 x NVIDIA A800 GPUs）
-To reproduce the results in Figure 1, 4, 5, 6. We first evaluate all draft model architectures on all target models, which will generate log files recoding accept length and conditional acceptance ratio. The log files will later be parsed for drawing the diagrams. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To conduct the experiment, run
-
-```bash
-cd evaluation/prep_figure1456
-bash eval_acceptance_length.sh
-```
-
-This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
-
-```bash
-bash eval_acceptance_length.sh --benches humaneval,qa
-```
-
-### Figure 4 （No extra time）
-After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
-
-```bash
-cd evaluation/figure4
-bash draw_figure4.sh
-```
-
-### Figure 1 （No extra time）
-Draw figure 1 with
-
-```bash
-cd evaluation/figure1
-bash draw_figure1.sh
-```
-
-### Figure 5 （No extra time）
-Draw figure 5 with
-
-```bash
-cd evaluation/figure5
-bash draw_figure5.sh
-```
-
-### Figure 6 （No extra time）
-Draw figure 6 with
-
-```bash
-cd evaluation/figure6
-bash draw_figure6.sh
-```
-
-### Figure 7 (1.5 hours)
-
-Please use the following commands to run the experiments for Figure 7:
-
-```base
-cd evaluation/figure7
-./run_figure7.sh
-```
-
-The results are saved in `evaluation/figure7` including `evaluation/figure7/e2e_llama2_bs_sweep_avg.csv` and `evaluation/figure7/figure7.pdf`. You could compare the generated `figure7.pdf` with Figure 7 in the paper to verify that the reproduced results match the reported performance trends.
-
-If you are interested in experimenting with different batch size settings, you can pass a custom list of values via the `--batch-size` argument when invoking `evaluation/figure7/e2e_llama2_bs_sweep.py` directly. For example:
-
-```bash
-python evaluation/figure7/e2e_llama2_bs_sweep.py --batch-size 10 12
-```
-
-The default sweep is `2 4 8 16 32`, matching the settings used in the paper. You can also run `python evaluation/figure7/e2e_llama2_bs_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure7/e2e_llama2_bs_sweep_avg.csv` and `evaluation/figure7/e2e_llama2_bs_sweep_detail.csv`.
-
-### Figure 8 （1 hour）
-
-Please use the following commands to run the experiments for Figure 8:
-
-```base
-cd evaluation/figure8
-./run_figure8.sh
-```
-
-The results are saved in `evaluation/figure8` including `evaluation/figure8/e2e_llama2_tree_verify_sweep_avg.csv` and `evaluation/figure8/figure8.pdf`. You could compare the generated `figure8.pdf` with Figure 8 in the paper to verify that the reproduced results match the reported performance trends.
-
-If you are interested in experimenting with different tree settings, you can pass a custom list of values via the `--sweep-configs` argument when invoking `evaluation/figure8/e2e_llama2_tree_verify_sweep.py` directly. For example:
-
-```bash
-python evaluation/figure8/e2e_llama2_tree_verify_sweep.py \
-  --sweep-configs 3,2,6 5,8,32 8,10,64
-```
-
-The default tree sweep config is  matching the settings used in the paper. You can also run `python evaluation/figure8/e2e_llama2_tree_verify_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure8/e2e_llama2_tree_verify_sweep_avg.csv` and `evaluation/figure8/e2e_llama2_tree_verify_sweep_detail.csv`.
-
-### Table 4 and Table 5 (2 hours for 2 x NVIDIA A800 GPUs)
-
-On a single machine in this AE setup, you can only reproduce Table 4. To reproduce Table 5, you need another machine with a different GPU type.
-
-Please use the following commands to run the Table 4 experiments.
-
-If you have two or more GPUs, pass two GPU IDs (comma-separated). The script will use the first two IDs and run LLaMA-2 and LLaMA-3 in parallel. For example:
-
-```bash
-cd evaluation/table4
-./run_table4.sh 0,1
-```
-
-If you only have one GPU, pass a single GPU ID. The script will run LLaMA-2 and LLaMA-3 sequentially on the same GPU. For example:
-
-```bash
-cd evaluation/table4
-./run_table4.sh 0
-```
-
-The results are saved in `evaluation/table4`, including `evaluation/table4/e2e_llama2.csv`, `evaluation/table4/e2e_llama3.csv`, and `evaluation/table4/table4.pdf`. You could compare the generated `table4.pdf` with Table 4 in the paper to verify that the reproduced results match the reported performance.
-
 ### Preparations for Figure 1,4,5,6（6 hour for 8 x NVIDIA A800 GPUs）
 To reproduce the results in Figure 1,4,5,6. We first evaluate all draft model architectures on all target models, which will generate log files recoding accept length and conditional acceptance ratio. The log files will later be parsed for drawing the diagrams. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To conduct the experiment, run
 
@@ -260,3 +153,65 @@ bash draw_figure6.sh
 ```
 
 The output image should be stored in evaluation/hass_vs_ld.pdf. Compare it with Figure 6 in the paper.
+
+### Figure 7 (1.5 hours)
+
+Please use the following commands to run the experiments for Figure 7:
+
+```base
+cd evaluation/figure7
+./run_figure7.sh
+```
+
+The results are saved in `evaluation/figure7` including `evaluation/figure7/e2e_llama2_bs_sweep_avg.csv` and `evaluation/figure7/figure7.pdf`. You could compare the generated `figure7.pdf` with Figure 7 in the paper to verify that the reproduced results match the reported performance trends.
+
+If you are interested in experimenting with different batch size settings, you can pass a custom list of values via the `--batch-size` argument when invoking `evaluation/figure7/e2e_llama2_bs_sweep.py` directly. For example:
+
+```bash
+python evaluation/figure7/e2e_llama2_bs_sweep.py --batch-size 10 12
+```
+
+The default sweep is `2 4 8 16 32`, matching the settings used in the paper. You can also run `python evaluation/figure7/e2e_llama2_bs_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure7/e2e_llama2_bs_sweep_avg.csv` and `evaluation/figure7/e2e_llama2_bs_sweep_detail.csv`.
+
+### Figure 8 （1 hour）
+
+Please use the following commands to run the experiments for Figure 8:
+
+```base
+cd evaluation/figure8
+./run_figure8.sh
+```
+
+The results are saved in `evaluation/figure8` including `evaluation/figure8/e2e_llama2_tree_verify_sweep_avg.csv` and `evaluation/figure8/figure8.pdf`. You could compare the generated `figure8.pdf` with Figure 8 in the paper to verify that the reproduced results match the reported performance trends.
+
+If you are interested in experimenting with different tree settings, you can pass a custom list of values via the `--sweep-configs` argument when invoking `evaluation/figure8/e2e_llama2_tree_verify_sweep.py` directly. For example:
+
+```bash
+python evaluation/figure8/e2e_llama2_tree_verify_sweep.py \
+  --sweep-configs 3,2,6 5,8,32 8,10,64
+```
+
+The default tree sweep config is  matching the settings used in the paper. You can also run `python evaluation/figure8/e2e_llama2_tree_verify_sweep.py --help` to see all available options. The result of this python script will be shown in `evaluation/figure8/e2e_llama2_tree_verify_sweep_avg.csv` and `evaluation/figure8/e2e_llama2_tree_verify_sweep_detail.csv`.
+
+### Table 4 and Table 5 (2 hours for 2 x NVIDIA A800 GPUs)
+
+On a single machine in this AE setup, you can only reproduce Table 4. To reproduce Table 5, you need another machine with a different GPU type.
+
+Please use the following commands to run the Table 4 experiments.
+
+If you have two or more GPUs, pass two GPU IDs (comma-separated). The script will use the first two IDs and run LLaMA-2 and LLaMA-3 in parallel. For example:
+
+```bash
+cd evaluation/table4
+./run_table4.sh 0,1
+```
+
+If you only have one GPU, pass a single GPU ID. The script will run LLaMA-2 and LLaMA-3 sequentially on the same GPU. For example:
+
+```bash
+cd evaluation/table4
+./run_table4.sh 0
+```
+
+The results are saved in `evaluation/table4`, including `evaluation/table4/e2e_llama2.csv`, `evaluation/table4/e2e_llama3.csv`, and `evaluation/table4/table4.pdf`. You could compare the generated `table4.pdf` with Table 4 in the paper to verify that the reproduced results match the reported performance.
+
