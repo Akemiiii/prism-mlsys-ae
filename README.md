@@ -166,12 +166,12 @@ This will take a long time to finish. If you prefer less benchmarks to save your
 bash eval_acceptance_length.sh --benches humaneval,qa
 ```
 
-### Figure 4 （No extra time）
-After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
+The results are saved in `evaluation/prep_figure1456/outputs`. The log file for each experiment is saved at `evaluation/prep_figure1456/outputs/<TARGET MODEL NAME>/<DRAFT MODEL NAME>/latest/logs/`, where the acceptance length and conditional acceptance rate are reported.
 
+You could also go into the code files to conduct a single experiment. For example, if you want to test PRISM on Llama-3-8B on MT-bench, run:
 ```bash
-cd evaluation/figure4
-bash draw_figure4.sh
+cd PRISM
+PROJECT=Llama-3-8B MODEL=PRISM BENCHES=mt_bench bash eval_all.sh 
 ```
 
 ### Figure 1 （No extra time）
@@ -181,6 +181,17 @@ Draw figure 1 with
 cd evaluation/figure1
 bash draw_figure1.sh
 ```
+The output image should be stored as a pdf file in evaluation/figure1. Compare it with the image in the paper.
+
+### Figure 4 （No extra time）
+After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
+
+```bash
+cd evaluation/figure4
+bash draw_figure4.sh
+```
+
+The output image should be stored as a pdf file in evaluation/figure4. Compare it with the image in the paper.
 
 ### Figure 5 （No extra time）
 Draw figure 5 with
@@ -190,6 +201,8 @@ cd evaluation/figure5
 bash draw_figure5.sh
 ```
 
+The output image should be stored as a pdf file in evaluation/figure5. Compare it with the image in the paper.
+
 ### Figure 6 （No extra time）
 Draw figure 6 with
 
@@ -197,3 +210,5 @@ Draw figure 6 with
 cd evaluation/figure6
 bash draw_figure6.sh
 ```
+
+The output image should be stored as a pdf file in evaluation/figure6. Compare it with the image in the paper.
