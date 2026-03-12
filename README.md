@@ -13,11 +13,11 @@ Please spin up a machine with the following characteristics:
 
 ### Preparation
 
-**Recommended: Use the provided docker image to run the experiments. If you use the docker image, you can skip the steps 1-5 below.**
+**Recommended: Use the provided docker image `akemiiii/prism-mlsys26-ae:latest` to run the experiments. If you use the docker image, you can skip the steps 1-5 below.**
 
 Please note: if you are using a shared server with other reviewers, please avoid environment conflicts:
 - If you use Docker, make sure your container name is unique to avoid collisions with other running containers.
-- If you do not use Docker, please create and use an isolated Python environment before installation.
+- Please pay attention to the possible port conflict with other reviewers.
 
 #### 1. Please download the code with 
 
@@ -52,14 +52,14 @@ conda activate prism
 pip install -r PRISM/requirements.txt
 ```
 
-5. Install python environment for eagle3
+#### 5. Install python environment for eagle3
 ```bash
 conda create -n eagle3 python=3.12 -y
 conda activate eagle3
 pip install -r Eagle3/requirements_eagle3.txt
 ```
 
-6. Download the models with
+#### 6. Download the models with
 ```bash
 cd evaluation/
 bash model_download.sh
@@ -71,7 +71,18 @@ If the download speed is too slow, you can use the backup Hugging Face script in
 ```bash
 cd evaluation/
 bash model_download_hf.sh
+cd ..
 ```
+
+Note that the `models` directory will be created in the root directory of the repository.
+
+#### 7. Use the docker image
+If you use the docker image to run all the experiments, please follow the steps below:
+```bash
+docker pull akemiiii/prism-mlsys26-ae:latest
+docker run -it -v models:/prism/models --gpus all prism-mlsys26-ae:latest
+```
+
 
 ## Running the Experiments
 
