@@ -198,3 +198,65 @@ cd evaluation/table4
 
 The results are saved in `evaluation/table4`, including `evaluation/table4/e2e_llama2.csv`, `evaluation/table4/e2e_llama3.csv`, and `evaluation/table4/table4.pdf`. You could compare the generated `table4.pdf` with Table 4 in the paper to verify that the reproduced results match the reported performance.
 
+### Preparations for Figure 1,4,5,6（6 hour for 8 x NVIDIA A800 GPUs）
+To reproduce the results in Figure 1,4,5,6. We first evaluate all draft model architectures on all target models, which will generate log files recoding accept length and conditional acceptance ratio. The log files will later be parsed for drawing the diagrams. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To conduct the experiment, run
+
+```bash
+cd evaluation/prep_figure1456
+bash eval_acceptance_length.sh --gpus 0,1
+```
+
+Use `--gpus` to assign accelerators.This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
+
+```bash
+bash eval_acceptance_length.sh --gpus --benches humaneval,qa
+```
+
+The results are saved in `evaluation/prep_figure1456/outputs`. The log file for each experiment is saved at `evaluation/prep_figure1456/outputs/<TARGET MODEL NAME>/<DRAFT MODEL NAME>/latest/logs/`, where the acceptance length and conditional acceptance rate are reported.
+
+You could also go into the code files to conduct a single experiment. For example, if you want to test PRISM on Llama-3-8B on MT-bench, run:
+```bash
+cd PRISM
+CUDA_VISIBLE_DEVICES=0,1 PROJECT=Llama-3-8B MODEL=PRISM BENCHES=mt_bench bash eval_all.sh 
+```
+
+Note that the PRISM code is only for the PRISM model; Eagle3 code is only for the Eagle3 model； All other models use the PRISM_legacy code for experimenting.
+
+### Figure 1 （No extra time）
+Draw figure 1 with
+
+```bash
+cd evaluation/figure1
+bash draw_figure1.sh
+```
+The output image should be stored as a pdf file in evaluation/figure1. Compare it with the image in the paper.
+
+### Figure 4 （No extra time）
+After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
+
+```bash
+cd evaluation/figure4
+bash draw_figure4.sh
+```
+
+The output image should be stored as a pdf file in evaluation/figure4. Compare it with the image in the paper.
+
+### Figure 5 （No extra time）
+Draw figure 5 with
+
+```bash
+cd evaluation/figure5
+bash draw_figure5.sh
+```
+
+The output image should be stored as a pdf file in evaluation/figure5. Compare it with the image in the paper.
+
+### Figure 6 （No extra time）
+Draw figure 6 with
+
+```bash
+cd evaluation/figure6
+bash draw_figure6.sh
+```
+
+The output image should be stored as a pdf file in evaluation/figure6. Compare it with the image in the paper.
