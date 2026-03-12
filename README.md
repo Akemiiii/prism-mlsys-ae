@@ -63,6 +63,7 @@ pip install -r Eagle3/requirements_eagle3.txt
 ```bash
 cd evaluation/
 bash model_download.sh
+cd ..
 ```
 
 By default, `model_download.sh` downloads models from ModelScope.
@@ -80,7 +81,7 @@ Note that the `models` directory will be created in the root directory of the re
 If you use the docker image to run all the experiments, please follow the steps below:
 ```bash
 docker pull akemiiii/prism-mlsys26-ae:latest
-docker run -it -v models:/prism/models --gpus all prism-mlsys26-ae:latest
+docker run -it -v ./models:/prism/models --gpus all prism-mlsys26-ae:latest
 ```
 
 
@@ -90,6 +91,51 @@ Here are step-by-step instructions for reproducing the evaluation results in the
 
 Please note that, due to the difference machine setups, the evaluation results will be different from what shown in the paper. However, the evaluation results should follow similar trend with what we've shown in the paper and support the same claims.
 
+### Preparations for Figure 1, 4, 5, 6（6 hours for 8 x NVIDIA A800 GPUs）
+To reproduce the results in Figure 1, 4, 5, 6. We first evaluate all draft model architectures on all target models, which will generate log files recoding accept length and conditional acceptance ratio. The log files will later be parsed for drawing the diagrams. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To conduct the experiment, run
+
+```bash
+cd evaluation/prep_figure1456
+bash eval_acceptance_length.sh
+```
+
+This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
+
+```bash
+bash eval_acceptance_length.sh --benches humaneval,qa
+```
+
+### Figure 4 （No extra time）
+After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
+
+```bash
+cd evaluation/figure4
+bash draw_figure4.sh
+```
+
+### Figure 1 （No extra time）
+Draw figure 1 with
+
+```bash
+cd evaluation/figure1
+bash draw_figure1.sh
+```
+
+### Figure 5 （No extra time）
+Draw figure 5 with
+
+```bash
+cd evaluation/figure5
+bash draw_figure5.sh
+```
+
+### Figure 6 （No extra time）
+Draw figure 6 with
+
+```bash
+cd evaluation/figure6
+bash draw_figure6.sh
+```
 
 ### Figure 7 (1.5 hours)
 
@@ -152,48 +198,3 @@ cd evaluation/table4
 
 The results are saved in `evaluation/table4`, including `evaluation/table4/e2e_llama2.csv`, `evaluation/table4/e2e_llama3.csv`, and `evaluation/table4/table4.pdf`. You could compare the generated `table4.pdf` with Table 4 in the paper to verify that the reproduced results match the reported performance.
 
-### Preparations for Figure 1,4,5,6（6 hour for 8 x NVIDIA A800 GPUs）
-To reproduce the results in Figure 1,4,5,6. We first evaluate all draft model architectures on all target models, which will generate log files recoding accept length and conditional acceptance ratio. The log files will later be parsed for drawing the diagrams. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To conduct the experiment, run
-
-```bash
-cd evaluation/prep_figure1456
-bash eval_acceptance_length.sh
-```
-
-This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
-
-```bash
-bash eval_acceptance_length.sh --benches humaneval,qa
-```
-
-### Figure 4 （No extra time）
-After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
-
-```bash
-cd evaluation/figure4
-bash draw_figure4.sh
-```
-
-### Figure 1 （No extra time）
-Draw figure 1 with
-
-```bash
-cd evaluation/figure1
-bash draw_figure1.sh
-```
-
-### Figure 5 （No extra time）
-Draw figure 5 with
-
-```bash
-cd evaluation/figure5
-bash draw_figure5.sh
-```
-
-### Figure 6 （No extra time）
-Draw figure 6 with
-
-```bash
-cd evaluation/figure6
-bash draw_figure6.sh
-```
