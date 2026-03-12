@@ -19,40 +19,44 @@ Please note: if you are using a shared server with other reviewers, please avoid
 - If you use Docker, make sure your container name is unique to avoid collisions with other running containers.
 - If you do not use Docker, please create and use an isolated Python environment before installation.
 
-1. Please download the code with 
+#### 1. Please download the code with 
 
 ```bash
 git clone https://github.com/Akemiiii/prism-mlsys-ae.git
 ```
 
-2. Install the Prism implemented on top of SGLang with
+#### 2. Install the Prism environment implemented on top of SGLang with
 
 ```bash
-cd prism-mlsys-ae/sglang/
+conda create -n prism-sglang python=3.12 -y
+conda activate prism-sglang
+pip install -r sglang/requirements.txt
 pip install -e "python[all]"
 cd ../..
 ```
 
-3. Install another python environment for some experiments with
+#### 3. Install another python environment for some experiments with SGLang 0.5.4
 ```bash
+conda activate prism-sglang
 python -m venv sglang054
 ./sglang054/bin/activate
 pip install sglang==0.5.4
 deactivate
 ```
+If you do not have `conda` installed, you can install it following ths [link](https://www.anaconda.com/docs/getting-started/miniconda/install).
 
-4. Install python enviroment for Prism implemented on top of pytorch (TO CHECK)
+#### 4. Install python enviroment for Prism implemented on top of pytorch
 ```bash
-conda create -n Prism python=3.12 -y
-conda activate Prism
-pip install -r requirements.txt
+conda create -n prism python=3.12 -y
+conda activate prism
+pip install -r PRISM/requirements.txt
 ```
 
-5. Install python environment for Eagle3
+5. Install python environment for eagle3
 ```bash
-conda create -n Eagle3 python=3.12 -y
-conda activate Eagle3
-pip install -r requirements_eagle3.txt
+conda create -n eagle3 python=3.12 -y
+conda activate eagle3
+pip install -r Eagle3/requirements_eagle3.txt
 ```
 
 6. Download the models with
