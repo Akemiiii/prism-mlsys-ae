@@ -174,6 +174,8 @@ cd PRISM
 PROJECT=Llama-3-8B MODEL=PRISM BENCHES=mt_bench bash eval_all.sh 
 ```
 
+Note that the PRISM code is only for the PRISM model; Eagle3 code is only for the Eagle3 model； All other models use the PRISM_legacy code for experimenting.
+
 ### Figure 1 （No extra time）
 Draw figure 1 with
 
