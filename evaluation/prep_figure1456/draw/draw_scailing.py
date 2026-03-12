@@ -211,7 +211,7 @@ def parse_args():
     parser.add_argument(
         "--save-path",
         type=str,
-        default="scaling_from_logs.pdf",
+        default="figure4.pdf",
         help="Output figure path"
     )
     return parser.parse_args()

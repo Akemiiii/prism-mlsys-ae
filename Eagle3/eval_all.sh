@@ -16,7 +16,7 @@ set -o pipefail
 #   BENCHES is a comma-separated list, e.g. "mt_bench,humaneval,gsm8k"
 PROJECT="${1:-${PROJECT:-Llama-3-8B}}"
 MODEL="${2:-${MODEL:-Eagle3}}"
-BENCHES_ARG="${3:-${BENCHES:-}}"
+BENCHES_ARG="${3:-${BENCHES:-humaneval,alpaca}}"
 
 REPO_ROOT="$(pwd)"
 export PYTHONPATH="${REPO_ROOT}:${PYTHONPATH:-}"

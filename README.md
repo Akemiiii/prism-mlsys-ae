@@ -1,5 +1,5 @@
 # Prism Artifact Evaluation
-This is the artifact evaluation repo for PRISM.
+This is the artifact evaluation repo for PRISM. The models are available at [ModelScope](https://www.modelscope.cn/models/Akemiiii/Prism-AE) and [Hugging Face](https://huggingface.co/Akem1i/Prism-AE).
 
 ## Getting Started Instructions
 
@@ -91,15 +91,15 @@ Here are step-by-step instructions for reproducing the evaluation results in the
 
 Please note that, due to the difference machine setups, the evaluation results will be different from what shown in the paper. However, the evaluation results should follow similar trend with what we've shown in the paper and support the same claims.
 
-### Preparations for Figure 1,4,5,6（6 hour for 8 x NVIDIA A800 GPUs）
+### Preparations for Figure 1,4,5,6（6 hours for 8 x NVIDIA A800 GPUs）
 To reproduce the results in Figure 1,4,5,6. We first evaluate all draft model architectures on all target models, which will generate log files recoding accept length and conditional acceptance ratio. The log files will later be parsed for drawing the diagrams. There are 8 combinations of target and draft models. For each combination, accept length experiments on 6 benchmarks and 2 different temprature settings are conducted. Each combination on all 12 runs takes around 45 minutes. To conduct the experiment, run
 
 ```bash
 cd evaluation/prep_figure1456
-bash eval_acceptance_length.sh --gpus 0,1
+bash eval_acceptance_length.sh --gpus 0,1,2,3,4,5,6,7
 ```
 
-Use `--gpus` to assign accelerators.This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
+Use `--gpus` to assign GPUs. This will take a long time to finish. If you prefer less benchmarks to save your time, pass valid benchmark name (mt_bench, humaneval, gsm8k, alpaca, sum, qa) to the script so that experiments for each combination will just run on selected benchmarks. For example:
 
 ```bash
 bash eval_acceptance_length.sh --gpus --benches humaneval,qa
@@ -122,7 +122,7 @@ Draw figure 1 with
 cd evaluation/figure1
 bash draw_figure1.sh
 ```
-The output image should be stored in evaluation/figure1/step-wise.pdf. Compare it with Figure 1 in the paper.
+The output image should be stored in `evaluation/figure1/figure1.pdf`. Please compare it with Figure 1 in the paper.
 
 ### Figure 4 （No extra time）
 After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
@@ -132,7 +132,7 @@ cd evaluation/figure4
 bash draw_figure4.sh
 ```
 
-The output image should be stored in evaluation/figure4/scaling_from_logs.pdf. Compare it with Figure 4 in the paper.
+The output image should be stored in `evaluation/figure4/figure4.pdf`. Please compare it with Figure 4 in the paper.
 
 ### Figure 5 （No extra time）
 Draw figure 5 with
@@ -142,7 +142,7 @@ cd evaluation/figure5
 bash draw_figure5.sh
 ```
 
-The output image should be stored in evaluation/eagle3_vs_ld.pdf. Compare it with Figure 5 in the paper.
+The output image should be stored in `evaluation/figure5/figure5.pdf`. Please compare it with Figure 5 in the paper.
 
 ### Figure 6 （No extra time）
 Draw figure 6 with
@@ -152,13 +152,14 @@ cd evaluation/figure6
 bash draw_figure6.sh
 ```
 
-The output image should be stored in evaluation/hass_vs_ld.pdf. Compare it with Figure 6 in the paper.
+The output image should be stored in `evaluation/figure6/figure6.pdf`. Please compare it with Figure 6 in the paper.
 
 ### Figure 7 (1.5 hours)
 
 Please use the following commands to run the experiments for Figure 7:
 
 ```base
+conda activate prism-sglang
 cd evaluation/figure7
 ./run_figure7.sh
 ```
@@ -178,6 +179,7 @@ The default sweep is `2 4 8 16 32`, matching the settings used in the paper. You
 Please use the following commands to run the experiments for Figure 8:
 
 ```base
+conda activate prism-sglang
 cd evaluation/figure8
 ./run_figure8.sh
 ```
@@ -202,6 +204,7 @@ Please use the following commands to run the Table 4 experiments.
 If you have two or more GPUs, pass two GPU IDs (comma-separated). The script will use the first two IDs and run LLaMA-2 and LLaMA-3 in parallel. For example:
 
 ```bash
+conda activate prism-sglang
 cd evaluation/table4
 ./run_table4.sh 0,1
 ```
@@ -209,6 +212,7 @@ cd evaluation/table4
 If you only have one GPU, pass a single GPU ID. The script will run LLaMA-2 and LLaMA-3 sequentially on the same GPU. For example:
 
 ```bash
+conda activate prism-sglang
 cd evaluation/table4
 ./run_table4.sh 0
 ```

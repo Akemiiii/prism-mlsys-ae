@@ -144,7 +144,7 @@ def parse_args():
         default="800k",
         help="Log filename suffix, e.g. 800k; set to '*' for wildcard matching"
     )
-    parser.add_argument("--save-path", type=str, default="step-wise.pdf")
+    parser.add_argument("--save-path", type=str, default="figure1.pdf")
     return parser.parse_args()
 
 # =========================

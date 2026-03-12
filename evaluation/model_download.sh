@@ -9,3 +9,4 @@ mkdir -p "${TARGET_DIR}"
 modelscope download --model "${MODEL_ID}" --local_dir "${TARGET_DIR}"
 
 echo "Models downloaded to: ${TARGET_DIR}"
+ln -s ${TARGET_DIR}/Meta-Llama-3-8B-Instruct ${TARGET_DIR}/Llama-3-8B-Instruct

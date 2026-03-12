@@ -51,7 +51,7 @@ def parse_args():
         help="Project name under outputs root"
     )
     parser.add_argument(
-        "--save-path", type=str, default="hass_vs_ld.pdf",
+        "--save-path", type=str, default="figure6.pdf",
         help="Output figure path"
     )
     return parser.parse_args()

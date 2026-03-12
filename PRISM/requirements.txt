@@ -1,4 +1,4 @@
-torch==2.1.0
+torch==2.2.0
 transformers==4.40.0
 accelerate==0.21.0
 fschat==0.2.31
@@ -10,3 +10,5 @@ protobuf==3.19.0
 wandb==0.16.3
 datasets==2.17.0
 pydantic
+prettytable
+setuptools==79.0.1

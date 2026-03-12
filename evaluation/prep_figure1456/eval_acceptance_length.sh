@@ -2,15 +2,15 @@
 #SBATCH -J PRISM
 #SBATCH -p gpu
 #SBATCH -N 1
-#SBATCH -n 128
-#SBATCH --gres=gpu:8
+#SBATCH -n 32
+#SBATCH --gres=gpu:2
 
 set -euo pipefail
 
 # -----------------------------
 # Default config (overridable by args/env)
 # -----------------------------
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
+CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1}"
 PROJECT="${PROJECT:-}"
 MODEL="${MODEL:-}"
 RUN_TAG="${RUN_TAG:-$(date +%Y%m%d_%H%M%S)}"
@@ -19,8 +19,8 @@ BENCHES="${BENCHES:-humaneval,alpaca}"
 # -----------------------------
 # Conda environment names
 # -----------------------------
-CONDA_ENV_DEFAULT="Specdec"
-CONDA_ENV_EAGLE3="Eagle3"
+CONDA_ENV_DEFAULT="prism"
+CONDA_ENV_EAGLE3="eagle3"
 
 # Initialize conda for this shell session (required for conda activate in scripts)
 if [[ -n "${CONDA_EXE:-}" ]]; then
@@ -129,8 +129,8 @@ else
   ROOT_DIR="$(cd "${BASE_DIR}/../.." && pwd)"
 fi
 
-# Directory for figure4 outputs
-FIG4_DIR="${ROOT_DIR}/evaluation/figure4"
+# Directory for outputs
+FIG4_DIR="${ROOT_DIR}/evaluation/prep_figure1456"
 
 # Codebase directories
 PRISM_DIR="${ROOT_DIR}/PRISM"
@@ -258,7 +258,7 @@ run_eval() {
     conda activate "${CONDA_ENV_DEFAULT}"
   fi
 
-  # Sync outputs to evaluation/figure4
+  # Sync outputs to evaluation/prep_figure1456
   local SRC_RESULT="${CODEBASE_DIR}/outputs/${CUR_PROJECT}/${CUR_MODEL}/${RUN_TAG}"
   local DST_BASE="${FIG4_DIR}/outputs/${CUR_PROJECT}/${CUR_MODEL}"
   local DST_RESULT="${DST_BASE}/${RUN_TAG}"
