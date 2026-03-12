@@ -183,7 +183,7 @@ Draw figure 1 with
 cd evaluation/figure1
 bash draw_figure1.sh
 ```
-The output image should be stored as a pdf file in evaluation/figure1. Compare it with the image in the paper.
+The output image should be stored in evaluation/figure1/step-wise.pdf. Compare it with Figure 1 in the paper.
 
 ### Figure 4 （No extra time）
 After all experiements finished, run the following script to draw the plot. Note that the plot will report missing log files if you did not run the corresponding benches. Missing values will be replaced by hard-coded values.
@@ -193,7 +193,7 @@ cd evaluation/figure4
 bash draw_figure4.sh
 ```
 
-The output image should be stored as a pdf file in evaluation/figure4. Compare it with the image in the paper.
+The output image should be stored in evaluation/figure4/scaling_from_logs.pdf. Compare it with Figure 4 in the paper.
 
 ### Figure 5 （No extra time）
 Draw figure 5 with
@@ -203,7 +203,7 @@ cd evaluation/figure5
 bash draw_figure5.sh
 ```
 
-The output image should be stored as a pdf file in evaluation/figure5. Compare it with the image in the paper.
+The output image should be stored in evaluation/eagle3_vs_ld.pdf. Compare it with Figure 5 in the paper.
 
 ### Figure 6 （No extra time）
 Draw figure 6 with
@@ -213,4 +213,4 @@ cd evaluation/figure6
 bash draw_figure6.sh
 ```
 
-The output image should be stored as a pdf file in evaluation/figure6. Compare it with the image in the paper.
+The output image should be stored in evaluation/hass_vs_ld.pdf. Compare it with Figure 6 in the paper.
