@@ -31,6 +31,7 @@ git clone https://github.com/Akemiiii/prism-mlsys-ae.git
 conda create -n prism-sglang python=3.12 -y
 conda activate prism-sglang
 pip install -r sglang/requirements.txt
+cd sglang
 pip install -e "python[all]"
 cd ../..
 ```
