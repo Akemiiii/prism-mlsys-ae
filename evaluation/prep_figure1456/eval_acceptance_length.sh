@@ -10,11 +10,11 @@ set -euo pipefail
 # -----------------------------
 # Default config (overridable by args/env)
 # -----------------------------
-CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1}"
+CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 PROJECT="${PROJECT:-}"
 MODEL="${MODEL:-}"
 RUN_TAG="${RUN_TAG:-$(date +%Y%m%d_%H%M%S)}"
-BENCHES="${BENCHES:-humaneval,alpaca}"
+BENCHES="${BENCHES:-}"
 
 # -----------------------------
 # Conda environment names
