@@ -22,7 +22,7 @@ CONFIG = {
     "PRISM":  {"color": "#d62728", "marker": "D"},
 }
 
-XTICKS = ["100k", "200k", "400k", "600k", "800k"]
+XTICKS = ["1", "2", "4", "6", "8"]
 
 # Hardcoded mean acceptance lengths (averaged over 6 benchmarks).
 # Used as fallback when log files are unavailable.
@@ -287,14 +287,14 @@ def main():
         
         # X 轴设置
         ax.set_xticks(x_range)
-        ax.set_xticklabels(XTICKS, fontsize=26)
-        ax.set_xlabel("Train Data Volume", fontsize=28)
+        ax.set_xticklabels(XTICKS, fontsize=32)
+        ax.set_xlabel(r"Train Data Volume ($10^{2}$K)", fontsize=34)
         
         # Y 轴设置模仿原图逻辑
         ax.yaxis.set_major_locator(MaxNLocator(nbins=6, prune='both'))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-        ax.tick_params(axis="y", labelsize=26)
-        ax.set_ylabel("Acceptance Length", fontsize=28)
+        ax.tick_params(axis="y", labelsize=32)
+        ax.set_ylabel("Acceptance Length", fontsize=34)
 
         # 统一置顶绘制 Legend
         handles = []
@@ -324,7 +324,7 @@ def main():
             bbox_to_anchor=(0.5, 1.02),
             bbox_transform=fig.transFigure,
             ncol=2,
-            fontsize=24,
+            fontsize=30,
             frameon=False
         )
 

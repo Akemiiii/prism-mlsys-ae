@@ -3,10 +3,11 @@
 import argparse
 from pathlib import Path
 
-import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 
 
 # =========================
@@ -17,7 +18,7 @@ CONFIG = {
     "PRISM-3": {"color": "#7B2D8E", "marker": "p"},
 }
 
-XTICKS = ["100k", "200k", "400k", "600k", "800k"]
+XTICKS = ["1", "2", "4", "6", "8"]
 
 MEAN_DATA = {
     "PRISM-2": [
@@ -53,8 +54,6 @@ def main():
 
     fig, ax = plt.subplots(figsize=(9, 7))
 
-    values = []
-    legends = []
     x_range = range(1, len(XTICKS) + 1)
 
     for model, series in MEAN_DATA.items():
@@ -64,10 +63,9 @@ def main():
             color=CONFIG[model]["color"],
             marker=CONFIG[model]["marker"],
             linestyle="-",
+            linewidth=2.5,
             markersize=10,
         )
-        values.extend(series[0])
-        legends.append(f"{model} (t=0)")
 
         ax.plot(
             x_range,
@@ -75,22 +73,51 @@ def main():
             color=CONFIG[model]["color"],
             marker=CONFIG[model]["marker"],
             linestyle=":",
+            linewidth=2.5,
             markersize=10,
         )
-        values.extend(series[1])
-        legends.append(f"{model} (t=1)")
 
-    ax.grid()
-    ax.legend(legends, loc="lower right", fontsize=24)
+    ax.grid(True, linestyle='--', alpha=0.6)
+
     ax.set_xticks(x_range)
-    ax.set_xticklabels(XTICKS, fontsize=24)
+    ax.set_xticklabels(XTICKS, fontsize=34)
+    ax.set_xlabel(r"Train Data Volume ($10^{2}$K)", fontsize=36)
 
-    y_min = round(min(values), 1)
-    y_max = round(max(values), 1)
-    ax.set_yticks(np.arange(y_min, y_max, 0.1))
-    ax.tick_params(axis="y", labelsize=24)
-    ax.set_ylabel("Acceptance Length", fontsize=26)
-    ax.set_xlabel("Train Data Volume", fontsize=26)
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=6, prune='both'))
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+    ax.tick_params(axis="y", labelsize=34)
+    ax.set_ylabel("Acceptance Length", fontsize=36)
+
+    handles = []
+    for model_label, style in CONFIG.items():
+        handles.append(Line2D(
+            [0], [0],
+            color=style['color'],
+            marker=style['marker'],
+            linestyle='-',
+            linewidth=2.5,
+            markersize=10,
+            label=f'{model_label} (t=0)'
+        ))
+        handles.append(Line2D(
+            [0], [0],
+            color=style['color'],
+            marker=style['marker'],
+            linestyle=':',
+            linewidth=2.5,
+            markersize=10,
+            label=f'{model_label} (t=1)'
+        ))
+
+    fig.legend(
+        handles=handles,
+        loc='lower center',
+        bbox_to_anchor=(0.5, 1.02),
+        bbox_transform=fig.transFigure,
+        ncol=2,
+        fontsize=32,
+        frameon=False
+    )
 
     fig.tight_layout()
 
