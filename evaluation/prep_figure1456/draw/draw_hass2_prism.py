@@ -1,4 +1,4 @@
-"""Plot mean comparison of HASS vs PRISM with log parsing support."""
+"""Plot mean comparison of HASS-2, HASS-3 vs PRISM with log parsing support."""
 
 import re
 import copy
@@ -9,14 +9,17 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")  # Use non-GUI backend for headless servers
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 
 
 # =========================
 # 1) Hardcoded fallback data
 # =========================
 CONFIG = {
-    "HASS": {"color": "#2ca02c", "marker": "s"},
-    "PRISM": {"color": "#d62728", "marker": "D"},
+    "HASS-2": {"color": "#2ca02c", "marker": "s"},
+    "HASS-3": {"color": "#ff7f0e", "marker": "^"},
+    "PRISM":  {"color": "#d62728", "marker": "D"},
 }
 
 XTICKS = ["100k", "200k", "400k", "600k", "800k"]
@@ -24,13 +27,17 @@ XTICKS = ["100k", "200k", "400k", "600k", "800k"]
 # Hardcoded mean acceptance lengths (averaged over 6 benchmarks).
 # Used as fallback when log files are unavailable.
 MEAN_FALLBACK = {
-    "HASS": [
-        [4.82782, 5.11311, 5.30529, 5.39198, 5.40402],
-        [4.64747, 4.92876, 5.0943, 5.20222, 5.18965],
+    "HASS-2": [
+        [4.49, 4.79, 4.99, 5.04, 5.14],
+        [4.23, 4.53, 4.67, 4.72, 4.86],
+    ],
+    "HASS-3": [
+        [4.64, 5.06, 5.29, 5.30, 5.36],
+        [4.34, 4.74, 4.96, 4.99, 5.03],
     ],
     "PRISM": [
-        [5.15345, 5.33306, 5.46842, 5.52751, 5.58582],
-        [4.94495, 5.13315, 5.275, 5.28516, 5.34297],
+        [4.99, 5.20, 5.34, 5.43, 5.46],
+        [4.65, 4.84, 4.99, 5.04, 5.08],
     ],
 }
 
@@ -40,7 +47,7 @@ MEAN_FALLBACK = {
 # =========================
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Plot mean acceptance length comparison of HASS vs PRISM"
+        description="Plot mean acceptance length comparison of HASS-2, HASS-3 vs PRISM"
     )
     parser.add_argument(
         "--outputs-root", type=str, default="./outputs",
@@ -76,10 +83,10 @@ BENCH_TO_LOGKEY = {
 }
 
 # Candidate model directory names under outputs/<project>/
-# Display label "HASS" maps to directory name "HASS-2" for log parsing
 MODEL_DIR_CANDIDATES = {
-    "HASS": ["HASS-2"],
-    "PRISM": ["PRISM"],
+    "HASS-2": ["HASS-2"],
+    "HASS-3": ["HASS-3"],
+    "PRISM":  ["PRISM"],
 }
 
 # Regex for extracting average acceptance length
@@ -253,9 +260,6 @@ def main():
     # Plot
     for benchmark, models in experiments.items():
         fig, ax = plt.subplots(figsize=(9, 7))
-
-        values = []
-        legends = []
         x_range = range(1, len(XTICKS) + 1)
 
         for model, series in models.items():
@@ -265,10 +269,9 @@ def main():
                 color=CONFIG[model]["color"],
                 marker=CONFIG[model]["marker"],
                 linestyle="-",
+                linewidth=2.5,
                 markersize=10,
             )
-            values.extend(series[0])
-            legends.append(f"{model} (t=0)")
 
             ax.plot(
                 x_range,
@@ -276,29 +279,61 @@ def main():
                 color=CONFIG[model]["color"],
                 marker=CONFIG[model]["marker"],
                 linestyle=":",
+                linewidth=2.5,
                 markersize=10,
             )
-            values.extend(series[1])
-            legends.append(f"{model} (t=1)")
 
-        ax.grid()
-        ax.legend(legends, loc="lower right", fontsize=26)
+        ax.grid(True, linestyle='--', alpha=0.6)
+        
+        # X 轴设置
         ax.set_xticks(x_range)
         ax.set_xticklabels(XTICKS, fontsize=26)
-
-        y_min = round(min(values), 1)
-        y_max = round(max(values), 1)
-        ax.set_yticks(np.arange(y_min, y_max, 0.1))
+        ax.set_xlabel("Train Data Volume", fontsize=28)
+        
+        # Y 轴设置模仿原图逻辑
+        ax.yaxis.set_major_locator(MaxNLocator(nbins=6, prune='both'))
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         ax.tick_params(axis="y", labelsize=26)
         ax.set_ylabel("Acceptance Length", fontsize=28)
-        ax.set_xlabel("Train Data Volume", fontsize=28)
+
+        # 统一置顶绘制 Legend
+        handles = []
+        for model_label, style in CONFIG.items():
+            handles.append(Line2D(
+                [0], [0],
+                color=style['color'],
+                marker=style['marker'],
+                linestyle='-',
+                linewidth=2.5,
+                markersize=10,
+                label=f'{model_label} (t=0)'
+            ))
+            handles.append(Line2D(
+                [0], [0],
+                color=style['color'],
+                marker=style['marker'],
+                linestyle=':',
+                linewidth=2.5,
+                markersize=10,
+                label=f'{model_label} (t=1)'
+            ))
+
+        fig.legend(
+            handles=handles,
+            loc='lower center',
+            bbox_to_anchor=(0.5, 1.02),
+            bbox_transform=fig.transFigure,
+            ncol=2,
+            fontsize=24,
+            frameon=False
+        )
 
         fig.tight_layout()
 
-    save_path = Path(args.save_path)
-    plt.savefig(save_path, bbox_inches="tight")
-    print(f"[DONE] Figure saved to: {save_path.resolve()}")
-    plt.close(fig)
+        save_path = Path(args.save_path)
+        plt.savefig(save_path, bbox_inches="tight")
+        print(f"[DONE] Figure saved to: {save_path.resolve()}")
+        plt.close(fig)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Plot mean comparison of EAGLE-3 vs PRISM with log parsing support."""
+"""Plot mean comparison of EAGLE-3 vs PRISM (w/ and w/o MHI) with log parsing support."""
 
 import re
 import copy
@@ -9,14 +9,17 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")  # Use non-GUI backend for headless servers
 from matplotlib import pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 
 
 # =========================
 # 1) Hardcoded fallback data
 # =========================
 CONFIG = {
-    "EAGLE-3": {"color": "#1f77b4", "marker": "o"},
-    "PRISM": {"color": "#d62728", "marker": "D"},
+    "EAGLE-3":        {"color": "#1f77b4", "marker": "o"},
+    "PRISM":          {"color": "#d62728", "marker": "D"},
+    "PRISM*":         {"color": "#e377c2", "marker": "s"},
 }
 
 XTICKS = ["100k", "200k", "400k", "600k", "800k"]
@@ -31,6 +34,10 @@ MEAN_FALLBACK = {
     "PRISM": [
         [4.99321, 5.20366, 5.34395, 5.43253, 5.4565],
         [4.64953, 4.84429, 4.99035, 5.03502, 5.08408],
+    ],
+    "PRISM*": [
+        [5.26, 5.42, 5.58, 5.64, 5.68],
+        [4.90, 5.07, 5.21, 5.27, 5.28],
     ],
 }
 
@@ -77,8 +84,9 @@ BENCH_TO_LOGKEY = {
 
 # Candidate model directory names under outputs/<project>/
 MODEL_DIR_CANDIDATES = {
-    "EAGLE-3": ["Eagle3", "EAGLE-3", "EAGLE3"],
-    "PRISM": ["PRISM"],
+    "EAGLE-3":       ["Eagle3", "EAGLE-3", "EAGLE3"],
+    "PRISM":         ["PRISM", "PRISM_noMHI", "PRISM-noMHI"],
+    "PRISM*":        ["PRISM_MHI", "PRISM-MHI", "PRISM_wMHI"],
 }
 
 # Regex for extracting average acceptance length
@@ -252,9 +260,6 @@ def main():
     # Plot
     for benchmark, models in experiments.items():
         fig, ax = plt.subplots(figsize=(9, 7))
-
-        values = []
-        legends = []
         x_range = range(1, len(XTICKS) + 1)
 
         for model, series in models.items():
@@ -264,10 +269,9 @@ def main():
                 color=CONFIG[model]["color"],
                 marker=CONFIG[model]["marker"],
                 linestyle="-",
+                linewidth=2.5,
                 markersize=10,
             )
-            values.extend(series[0])
-            legends.append(f"{model} (t=0)")
 
             ax.plot(
                 x_range,
@@ -275,29 +279,61 @@ def main():
                 color=CONFIG[model]["color"],
                 marker=CONFIG[model]["marker"],
                 linestyle=":",
+                linewidth=2.5,
                 markersize=10,
             )
-            values.extend(series[1])
-            legends.append(f"{model} (t=1)")
 
-        ax.grid()
-        ax.legend(legends, loc="lower right", fontsize=24)
+        ax.grid(True, linestyle='--', alpha=0.6)
+        
+        # X 轴设置
         ax.set_xticks(x_range)
         ax.set_xticklabels(XTICKS, fontsize=24)
-
-        y_min = round(min(values), 1)
-        y_max = round(max(values), 1)
-        ax.set_yticks(np.arange(y_min, y_max, 0.1))
+        ax.set_xlabel("Train Data Volume", fontsize=26)
+        
+        # Y 轴设置模仿原图逻辑
+        ax.yaxis.set_major_locator(MaxNLocator(nbins=6, prune='both'))
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         ax.tick_params(axis="y", labelsize=24)
         ax.set_ylabel("Acceptance Length", fontsize=26)
-        ax.set_xlabel("Train Data Volume", fontsize=26)
+
+        # 统一置顶绘制 Legend
+        handles = []
+        for model_label, style in CONFIG.items():
+            handles.append(Line2D(
+                [0], [0],
+                color=style['color'],
+                marker=style['marker'],
+                linestyle='-',
+                linewidth=2.5,
+                markersize=10,
+                label=f'{model_label} (t=0)'
+            ))
+            handles.append(Line2D(
+                [0], [0],
+                color=style['color'],
+                marker=style['marker'],
+                linestyle=':',
+                linewidth=2.5,
+                markersize=10,
+                label=f'{model_label} (t=1)'
+            ))
+
+        fig.legend(
+            handles=handles,
+            loc='lower center',
+            bbox_to_anchor=(0.5, 1.02),
+            bbox_transform=fig.transFigure,
+            ncol=2,
+            fontsize=24,
+            frameon=False
+        )
 
         fig.tight_layout()
 
-    save_path = Path(args.save_path)
-    plt.savefig(save_path, bbox_inches="tight")
-    print(f"[DONE] Figure saved to: {save_path.resolve()}")
-    plt.close(fig)
+        save_path = Path(args.save_path)
+        plt.savefig(save_path, bbox_inches="tight")
+        print(f"[DONE] Figure saved to: {save_path.resolve()}")
+        plt.close(fig)
 
 
 if __name__ == "__main__":
